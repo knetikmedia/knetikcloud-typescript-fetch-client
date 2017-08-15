@@ -6857,10 +6857,12 @@ export const AccessTokenApiFetchParamCreator = {
      * @param grantType Grant type
      * @param clientId The id of the client
      * @param clientSecret The secret key of the client.  Used only with a grant_type of client_credentials
-     * @param username The username of the client.  Used only with a grant_type of password
-     * @param password The password of the client.  Used only with a grant_type of password
+     * @param username The username of the client. Used only with a grant_type of password
+     * @param password The password of the client. Used only with a grant_type of password
+     * @param token The 3rd party authentication token. Used only with a grant_type of facebook, google, etc (social plugins)
+     * @param refreshToken The refresh token obtained during prior authentication. Used only with a grant_type of refresh_token
      */
-    getOAuthToken(params: {  grantType: string; clientId: string; clientSecret?: string; username?: string; password?: string; }, options: any = {}): FetchArgs {
+    getOAuthToken(params: {  grantType: string; clientId: string; clientSecret?: string; username?: string; password?: string; token?: string; refreshToken?: string; }, options: any = {}): FetchArgs {
         // verify required parameter "grantType" is set
         if (params["grantType"] == null) {
             throw new Error("Missing required parameter grantType when calling getOAuthToken");
@@ -6881,6 +6883,8 @@ export const AccessTokenApiFetchParamCreator = {
             "client_secret": params["clientSecret"],
             "username": params["username"],
             "password": params["password"],
+            "token": params["token"],
+            "refresh_token": params["refreshToken"],
         });
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
@@ -6903,10 +6907,12 @@ export const AccessTokenApiFp = {
      * @param grantType Grant type
      * @param clientId The id of the client
      * @param clientSecret The secret key of the client.  Used only with a grant_type of client_credentials
-     * @param username The username of the client.  Used only with a grant_type of password
-     * @param password The password of the client.  Used only with a grant_type of password
+     * @param username The username of the client. Used only with a grant_type of password
+     * @param password The password of the client. Used only with a grant_type of password
+     * @param token The 3rd party authentication token. Used only with a grant_type of facebook, google, etc (social plugins)
+     * @param refreshToken The refresh token obtained during prior authentication. Used only with a grant_type of refresh_token
      */
-    getOAuthToken(params: { grantType: string; clientId: string; clientSecret?: string; username?: string; password?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<OAuth2Resource> {
+    getOAuthToken(params: { grantType: string; clientId: string; clientSecret?: string; username?: string; password?: string; token?: string; refreshToken?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<OAuth2Resource> {
         const fetchArgs = AccessTokenApiFetchParamCreator.getOAuthToken(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
@@ -6930,10 +6936,12 @@ export class AccessTokenApi extends BaseAPI {
      * @param grantType Grant type
      * @param clientId The id of the client
      * @param clientSecret The secret key of the client.  Used only with a grant_type of client_credentials
-     * @param username The username of the client.  Used only with a grant_type of password
-     * @param password The password of the client.  Used only with a grant_type of password
+     * @param username The username of the client. Used only with a grant_type of password
+     * @param password The password of the client. Used only with a grant_type of password
+     * @param token The 3rd party authentication token. Used only with a grant_type of facebook, google, etc (social plugins)
+     * @param refreshToken The refresh token obtained during prior authentication. Used only with a grant_type of refresh_token
      */
-    getOAuthToken(params: {  grantType: string; clientId: string; clientSecret?: string; username?: string; password?: string; }, options: any = {}) {
+    getOAuthToken(params: {  grantType: string; clientId: string; clientSecret?: string; username?: string; password?: string; token?: string; refreshToken?: string; }, options: any = {}) {
         return AccessTokenApiFp.getOAuthToken(params, options)(this.fetch, this.basePath);
     }
 };
@@ -6949,10 +6957,12 @@ export const AccessTokenApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param grantType Grant type
          * @param clientId The id of the client
          * @param clientSecret The secret key of the client.  Used only with a grant_type of client_credentials
-         * @param username The username of the client.  Used only with a grant_type of password
-         * @param password The password of the client.  Used only with a grant_type of password
+         * @param username The username of the client. Used only with a grant_type of password
+         * @param password The password of the client. Used only with a grant_type of password
+         * @param token The 3rd party authentication token. Used only with a grant_type of facebook, google, etc (social plugins)
+         * @param refreshToken The refresh token obtained during prior authentication. Used only with a grant_type of refresh_token
          */
-        getOAuthToken(params: {  grantType: string; clientId: string; clientSecret?: string; username?: string; password?: string; }, options: any = {}) {
+        getOAuthToken(params: {  grantType: string; clientId: string; clientSecret?: string; username?: string; password?: string; token?: string; refreshToken?: string; }, options: any = {}) {
             return AccessTokenApiFp.getOAuthToken(params, options)(fetch, basePath);
         },
     };
