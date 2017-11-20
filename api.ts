@@ -7647,7 +7647,7 @@ export const ActivitiesApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getActivities(params: {  filterTemplate?: boolean; filterName?: string; filterId?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getActivities(params: {  filterTemplate?: boolean; filterName?: string; filterId?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/activities`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -7675,6 +7675,20 @@ export const ActivitiesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -7686,7 +7700,7 @@ export const ActivitiesApiFetchParamCreator = {
      * @summary Get a single activity
      * @param id The id of the activity
      */
-    getActivity(params: {  id: number; }, options: any = {}): FetchArgs {
+    getActivity(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getActivity");
@@ -7699,6 +7713,20 @@ export const ActivitiesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -8171,8 +8199,8 @@ export const ActivitiesApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getActivities(params: { filterTemplate?: boolean; filterName?: string; filterId?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceBareActivityResource> {
-        const fetchArgs = ActivitiesApiFetchParamCreator.getActivities(params, options);
+    getActivities(params: { filterTemplate?: boolean; filterName?: string; filterId?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceBareActivityResource> {
+        const fetchArgs = ActivitiesApiFetchParamCreator.getActivities(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -8188,8 +8216,8 @@ export const ActivitiesApiFp = {
      * @summary Get a single activity
      * @param id The id of the activity
      */
-    getActivity(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ActivityResource> {
-        const fetchArgs = ActivitiesApiFetchParamCreator.getActivity(params, options);
+    getActivity(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ActivityResource> {
+        const fetchArgs = ActivitiesApiFetchParamCreator.getActivity(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -8407,7 +8435,7 @@ export class ActivitiesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getActivities(params: {  filterTemplate?: boolean; filterName?: string; filterId?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return ActivitiesApiFp.getActivities(params, options)(this.fetch, this.basePath);
+        return ActivitiesApiFp.getActivities(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -8415,7 +8443,7 @@ export class ActivitiesApi extends BaseAPI {
      * @param id The id of the activity
      */
     getActivity(params: {  id: number; }, options: any = {}) {
-        return ActivitiesApiFp.getActivity(params, options)(this.fetch, this.basePath);
+        return ActivitiesApiFp.getActivity(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -8552,16 +8580,16 @@ export const ActivitiesApiFactory = function (fetch?: FetchAPI, basePath?: strin
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getActivities(params: {  filterTemplate?: boolean; filterName?: string; filterId?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return ActivitiesApiFp.getActivities(params, options)(fetch, basePath);
+        getActivities(params: {  filterTemplate?: boolean; filterName?: string; filterId?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return ActivitiesApiFp.getActivities(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
          * @summary Get a single activity
          * @param id The id of the activity
          */
-        getActivity(params: {  id: number; }, options: any = {}) {
-            return ActivitiesApiFp.getActivity(params, options)(fetch, basePath);
+        getActivity(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return ActivitiesApiFp.getActivity(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -13910,7 +13938,7 @@ export const CampaignsApiFetchParamCreator = {
      * @summary Returns a single campaign
      * @param id The campaign id
      */
-    getCampaign(params: {  id: number; }, options: any = {}): FetchArgs {
+    getCampaign(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getCampaign");
@@ -13923,6 +13951,20 @@ export const CampaignsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -13940,7 +13982,7 @@ export const CampaignsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCampaignChallenges(params: {  id: number; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getCampaignChallenges(params: {  id: number; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getCampaignChallenges");
@@ -13969,6 +14011,20 @@ export const CampaignsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -14069,7 +14125,7 @@ export const CampaignsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCampaigns(params: {  filterActive?: boolean; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getCampaigns(params: {  filterActive?: boolean; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/campaigns`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -14090,6 +14146,20 @@ export const CampaignsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -14328,8 +14398,8 @@ export const CampaignsApiFp = {
      * @summary Returns a single campaign
      * @param id The campaign id
      */
-    getCampaign(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CampaignResource> {
-        const fetchArgs = CampaignsApiFetchParamCreator.getCampaign(params, options);
+    getCampaign(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CampaignResource> {
+        const fetchArgs = CampaignsApiFetchParamCreator.getCampaign(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -14350,8 +14420,8 @@ export const CampaignsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCampaignChallenges(params: { id: number; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceChallengeResource> {
-        const fetchArgs = CampaignsApiFetchParamCreator.getCampaignChallenges(params, options);
+    getCampaignChallenges(params: { id: number; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceChallengeResource> {
+        const fetchArgs = CampaignsApiFetchParamCreator.getCampaignChallenges(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -14406,8 +14476,8 @@ export const CampaignsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCampaigns(params: { filterActive?: boolean; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCampaignResource> {
-        const fetchArgs = CampaignsApiFetchParamCreator.getCampaigns(params, options);
+    getCampaigns(params: { filterActive?: boolean; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCampaignResource> {
+        const fetchArgs = CampaignsApiFetchParamCreator.getCampaigns(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -14526,7 +14596,7 @@ export class CampaignsApi extends BaseAPI {
      * @param id The campaign id
      */
     getCampaign(params: {  id: number; }, options: any = {}) {
-        return CampaignsApiFp.getCampaign(params, options)(this.fetch, this.basePath);
+        return CampaignsApiFp.getCampaign(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -14539,7 +14609,7 @@ export class CampaignsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getCampaignChallenges(params: {  id: number; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return CampaignsApiFp.getCampaignChallenges(params, options)(this.fetch, this.basePath);
+        return CampaignsApiFp.getCampaignChallenges(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -14568,7 +14638,7 @@ export class CampaignsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getCampaigns(params: {  filterActive?: boolean; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return CampaignsApiFp.getCampaigns(params, options)(this.fetch, this.basePath);
+        return CampaignsApiFp.getCampaigns(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -14651,8 +14721,8 @@ export const CampaignsApiFactory = function (fetch?: FetchAPI, basePath?: string
          * @summary Returns a single campaign
          * @param id The campaign id
          */
-        getCampaign(params: {  id: number; }, options: any = {}) {
-            return CampaignsApiFp.getCampaign(params, options)(fetch, basePath);
+        getCampaign(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return CampaignsApiFp.getCampaign(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -14664,8 +14734,8 @@ export const CampaignsApiFactory = function (fetch?: FetchAPI, basePath?: string
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getCampaignChallenges(params: {  id: number; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return CampaignsApiFp.getCampaignChallenges(params, options)(fetch, basePath);
+        getCampaignChallenges(params: {  id: number; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return CampaignsApiFp.getCampaignChallenges(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -14693,8 +14763,8 @@ export const CampaignsApiFactory = function (fetch?: FetchAPI, basePath?: string
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getCampaigns(params: {  filterActive?: boolean; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return CampaignsApiFp.getCampaigns(params, options)(fetch, basePath);
+        getCampaigns(params: {  filterActive?: boolean; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return CampaignsApiFp.getCampaigns(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -14786,7 +14856,7 @@ export const CampaignsChallengesApiFetchParamCreator = {
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
         if (params["validateSettings"] !== undefined) {
-            urlObj.query["validateSettings"] = params["validateSettings"];
+            urlObj.query["validate_settings"] = params["validateSettings"];
         }
         let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
 
@@ -15110,7 +15180,7 @@ export const CampaignsChallengesApiFetchParamCreator = {
      * @summary Retrieve a challenge
      * @param id The challenge id
      */
-    getChallenge(params: {  id: number; }, options: any = {}): FetchArgs {
+    getChallenge(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getChallenge");
@@ -15123,6 +15193,20 @@ export const CampaignsChallengesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -15138,7 +15222,7 @@ export const CampaignsChallengesApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getChallengeActivities(params: {  challengeId: number; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getChallengeActivities(params: {  challengeId: number; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "challengeId" is set
         if (params["challengeId"] == null) {
             throw new Error("Missing required parameter challengeId when calling getChallengeActivities");
@@ -15162,6 +15246,20 @@ export const CampaignsChallengesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -15174,7 +15272,7 @@ export const CampaignsChallengesApiFetchParamCreator = {
      * @param id The challenge_activity id
      * @param challengeId The challenge id
      */
-    getChallengeActivity(params: {  id: number; challengeId: number; }, options: any = {}): FetchArgs {
+    getChallengeActivity(params: {  id: number; challengeId: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getChallengeActivity");
@@ -15192,6 +15290,20 @@ export const CampaignsChallengesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -15289,7 +15401,7 @@ export const CampaignsChallengesApiFetchParamCreator = {
      * @summary Retrieve a single challenge event details
      * @param id The challenge event id
      */
-    getChallengeEvent(params: {  id: number; }, options: any = {}): FetchArgs {
+    getChallengeEvent(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getChallengeEvent");
@@ -15302,6 +15414,20 @@ export const CampaignsChallengesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -15320,7 +15446,7 @@ export const CampaignsChallengesApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getChallengeEvents(params: {  filterStartDate?: string; filterEndDate?: string; filterCampaigns?: boolean; filterChallenge?: number; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getChallengeEvents(params: {  filterStartDate?: string; filterEndDate?: string; filterCampaigns?: boolean; filterChallenge?: number; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/challenges/events`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -15350,6 +15476,20 @@ export const CampaignsChallengesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -15452,7 +15592,7 @@ export const CampaignsChallengesApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getChallenges(params: {  filterActiveCampaign?: boolean; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getChallenges(params: {  filterActiveCampaign?: boolean; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/challenges`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -15479,6 +15619,20 @@ export const CampaignsChallengesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -15536,8 +15690,9 @@ export const CampaignsChallengesApiFetchParamCreator = {
      * @param id The challenge_activity id
      * @param challengeId The challenge id
      * @param challengeActivityResource The challenge activity resource object
+     * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity.
      */
-    updateChallengeActivity(params: {  id: number; challengeId: number; challengeActivityResource?: ChallengeActivityResource; }, configuration: Configuration, options: any = {}): FetchArgs {
+    updateChallengeActivity(params: {  id: number; challengeId: number; challengeActivityResource?: ChallengeActivityResource; validateSettings?: boolean; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling updateChallengeActivity");
@@ -15550,6 +15705,10 @@ export const CampaignsChallengesApiFetchParamCreator = {
             .replace(`{${"id"}}`, `${ params["id"] }`)
             .replace(`{${"challenge_id"}}`, `${ params["challengeId"] }`);
         let urlObj = url.parse(baseUrl, true);
+        urlObj.query =  assign({}, urlObj.query);
+        if (params["validateSettings"] !== undefined) {
+            urlObj.query["validateSettings"] = params["validateSettings"];
+        }
         let fetchOptions: RequestInit = assign({}, { method: "PUT" }, options);
 
         let contentTypeHeader: Dictionary<string> = {};
@@ -15837,8 +15996,8 @@ export const CampaignsChallengesApiFp = {
      * @summary Retrieve a challenge
      * @param id The challenge id
      */
-    getChallenge(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ChallengeResource> {
-        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallenge(params, options);
+    getChallenge(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ChallengeResource> {
+        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallenge(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -15857,8 +16016,8 @@ export const CampaignsChallengesApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getChallengeActivities(params: { challengeId: number; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceBareChallengeActivityResource> {
-        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallengeActivities(params, options);
+    getChallengeActivities(params: { challengeId: number; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceBareChallengeActivityResource> {
+        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallengeActivities(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -15875,8 +16034,8 @@ export const CampaignsChallengesApiFp = {
      * @param id The challenge_activity id
      * @param challengeId The challenge id
      */
-    getChallengeActivity(params: { id: number; challengeId: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ChallengeActivityResource> {
-        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallengeActivity(params, options);
+    getChallengeActivity(params: { id: number; challengeId: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ChallengeActivityResource> {
+        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallengeActivity(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -15928,8 +16087,8 @@ export const CampaignsChallengesApiFp = {
      * @summary Retrieve a single challenge event details
      * @param id The challenge event id
      */
-    getChallengeEvent(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ChallengeEventResource> {
-        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallengeEvent(params, options);
+    getChallengeEvent(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ChallengeEventResource> {
+        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallengeEvent(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -15951,8 +16110,8 @@ export const CampaignsChallengesApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getChallengeEvents(params: { filterStartDate?: string; filterEndDate?: string; filterCampaigns?: boolean; filterChallenge?: number; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceChallengeEventResource> {
-        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallengeEvents(params, options);
+    getChallengeEvents(params: { filterStartDate?: string; filterEndDate?: string; filterCampaigns?: boolean; filterChallenge?: number; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceChallengeEventResource> {
+        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallengeEvents(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -16009,8 +16168,8 @@ export const CampaignsChallengesApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getChallenges(params: { filterActiveCampaign?: boolean; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceChallengeResource> {
-        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallenges(params, options);
+    getChallenges(params: { filterActiveCampaign?: boolean; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceChallengeResource> {
+        const fetchArgs = CampaignsChallengesApiFetchParamCreator.getChallenges(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -16045,8 +16204,9 @@ export const CampaignsChallengesApiFp = {
      * @param id The challenge_activity id
      * @param challengeId The challenge id
      * @param challengeActivityResource The challenge activity resource object
+     * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity.
      */
-    updateChallengeActivity(params: { id: number; challengeId: number; challengeActivityResource?: ChallengeActivityResource;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ChallengeActivityResource> {
+    updateChallengeActivity(params: { id: number; challengeId: number; challengeActivityResource?: ChallengeActivityResource; validateSettings?: boolean;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ChallengeActivityResource> {
         const fetchArgs = CampaignsChallengesApiFetchParamCreator.updateChallengeActivity(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
@@ -16183,7 +16343,7 @@ export class CampaignsChallengesApi extends BaseAPI {
      * @param id The challenge id
      */
     getChallenge(params: {  id: number; }, options: any = {}) {
-        return CampaignsChallengesApiFp.getChallenge(params, options)(this.fetch, this.basePath);
+        return CampaignsChallengesApiFp.getChallenge(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -16194,7 +16354,7 @@ export class CampaignsChallengesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getChallengeActivities(params: {  challengeId: number; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return CampaignsChallengesApiFp.getChallengeActivities(params, options)(this.fetch, this.basePath);
+        return CampaignsChallengesApiFp.getChallengeActivities(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
@@ -16203,7 +16363,7 @@ export class CampaignsChallengesApi extends BaseAPI {
      * @param challengeId The challenge id
      */
     getChallengeActivity(params: {  id: number; challengeId: number; }, options: any = {}) {
-        return CampaignsChallengesApiFp.getChallengeActivity(params, options)(this.fetch, this.basePath);
+        return CampaignsChallengesApiFp.getChallengeActivity(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -16229,7 +16389,7 @@ export class CampaignsChallengesApi extends BaseAPI {
      * @param id The challenge event id
      */
     getChallengeEvent(params: {  id: number; }, options: any = {}) {
-        return CampaignsChallengesApiFp.getChallengeEvent(params, options)(this.fetch, this.basePath);
+        return CampaignsChallengesApiFp.getChallengeEvent(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -16243,7 +16403,7 @@ export class CampaignsChallengesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getChallengeEvents(params: {  filterStartDate?: string; filterEndDate?: string; filterCampaigns?: boolean; filterChallenge?: number; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return CampaignsChallengesApiFp.getChallengeEvents(params, options)(this.fetch, this.basePath);
+        return CampaignsChallengesApiFp.getChallengeEvents(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -16274,7 +16434,7 @@ export class CampaignsChallengesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getChallenges(params: {  filterActiveCampaign?: boolean; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return CampaignsChallengesApiFp.getChallenges(params, options)(this.fetch, this.basePath);
+        return CampaignsChallengesApiFp.getChallenges(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * If the challenge is a copy, changes will propagate to all the related challenges
@@ -16291,8 +16451,9 @@ export class CampaignsChallengesApi extends BaseAPI {
      * @param id The challenge_activity id
      * @param challengeId The challenge id
      * @param challengeActivityResource The challenge activity resource object
+     * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity.
      */
-    updateChallengeActivity(params: {  id: number; challengeId: number; challengeActivityResource?: ChallengeActivityResource; }, options: any = {}) {
+    updateChallengeActivity(params: {  id: number; challengeId: number; challengeActivityResource?: ChallengeActivityResource; validateSettings?: boolean; }, options: any = {}) {
         return CampaignsChallengesApiFp.updateChallengeActivity(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
@@ -16402,8 +16563,8 @@ export const CampaignsChallengesApiFactory = function (fetch?: FetchAPI, basePat
          * @summary Retrieve a challenge
          * @param id The challenge id
          */
-        getChallenge(params: {  id: number; }, options: any = {}) {
-            return CampaignsChallengesApiFp.getChallenge(params, options)(fetch, basePath);
+        getChallenge(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return CampaignsChallengesApiFp.getChallenge(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -16413,8 +16574,8 @@ export const CampaignsChallengesApiFactory = function (fetch?: FetchAPI, basePat
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getChallengeActivities(params: {  challengeId: number; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return CampaignsChallengesApiFp.getChallengeActivities(params, options)(fetch, basePath);
+        getChallengeActivities(params: {  challengeId: number; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return CampaignsChallengesApiFp.getChallengeActivities(params, configuration, options)(fetch, basePath);
         },
         /**
          * A challenge can have multiple instances of the same activity and thus the id used is of the specific entry within the challenge
@@ -16422,8 +16583,8 @@ export const CampaignsChallengesApiFactory = function (fetch?: FetchAPI, basePat
          * @param id The challenge_activity id
          * @param challengeId The challenge id
          */
-        getChallengeActivity(params: {  id: number; challengeId: number; }, options: any = {}) {
-            return CampaignsChallengesApiFp.getChallengeActivity(params, options)(fetch, basePath);
+        getChallengeActivity(params: {  id: number; challengeId: number; }, configuration: Configuration, options: any = {}) {
+            return CampaignsChallengesApiFp.getChallengeActivity(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -16448,8 +16609,8 @@ export const CampaignsChallengesApiFactory = function (fetch?: FetchAPI, basePat
          * @summary Retrieve a single challenge event details
          * @param id The challenge event id
          */
-        getChallengeEvent(params: {  id: number; }, options: any = {}) {
-            return CampaignsChallengesApiFp.getChallengeEvent(params, options)(fetch, basePath);
+        getChallengeEvent(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return CampaignsChallengesApiFp.getChallengeEvent(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -16462,8 +16623,8 @@ export const CampaignsChallengesApiFactory = function (fetch?: FetchAPI, basePat
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getChallengeEvents(params: {  filterStartDate?: string; filterEndDate?: string; filterCampaigns?: boolean; filterChallenge?: number; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return CampaignsChallengesApiFp.getChallengeEvents(params, options)(fetch, basePath);
+        getChallengeEvents(params: {  filterStartDate?: string; filterEndDate?: string; filterCampaigns?: boolean; filterChallenge?: number; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return CampaignsChallengesApiFp.getChallengeEvents(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -16493,8 +16654,8 @@ export const CampaignsChallengesApiFactory = function (fetch?: FetchAPI, basePat
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getChallenges(params: {  filterActiveCampaign?: boolean; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return CampaignsChallengesApiFp.getChallenges(params, options)(fetch, basePath);
+        getChallenges(params: {  filterActiveCampaign?: boolean; filterStartDate?: string; filterEndDate?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return CampaignsChallengesApiFp.getChallenges(params, configuration, options)(fetch, basePath);
         },
         /**
          * If the challenge is a copy, changes will propagate to all the related challenges
@@ -16511,8 +16672,9 @@ export const CampaignsChallengesApiFactory = function (fetch?: FetchAPI, basePat
          * @param id The challenge_activity id
          * @param challengeId The challenge id
          * @param challengeActivityResource The challenge activity resource object
+         * @param validateSettings Whether to validate the settings being sent against the available settings on the base activity.
          */
-        updateChallengeActivity(params: {  id: number; challengeId: number; challengeActivityResource?: ChallengeActivityResource; }, configuration: Configuration, options: any = {}) {
+        updateChallengeActivity(params: {  id: number; challengeId: number; challengeActivityResource?: ChallengeActivityResource; validateSettings?: boolean; }, configuration: Configuration, options: any = {}) {
             return CampaignsChallengesApiFp.updateChallengeActivity(params, configuration, options)(fetch, basePath);
         },
         /**
@@ -16623,7 +16785,7 @@ export const CampaignsRewardsApiFetchParamCreator = {
      * @summary Get a single reward set
      * @param id The reward id
      */
-    getRewardSet(params: {  id: number; }, options: any = {}): FetchArgs {
+    getRewardSet(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getRewardSet");
@@ -16636,6 +16798,20 @@ export const CampaignsRewardsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -16650,7 +16826,7 @@ export const CampaignsRewardsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getRewardSets(params: {  size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getRewardSets(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/rewards`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -16668,6 +16844,20 @@ export const CampaignsRewardsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -16764,8 +16954,8 @@ export const CampaignsRewardsApiFp = {
      * @summary Get a single reward set
      * @param id The reward id
      */
-    getRewardSet(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<RewardSetResource> {
-        const fetchArgs = CampaignsRewardsApiFetchParamCreator.getRewardSet(params, options);
+    getRewardSet(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<RewardSetResource> {
+        const fetchArgs = CampaignsRewardsApiFetchParamCreator.getRewardSet(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -16783,8 +16973,8 @@ export const CampaignsRewardsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getRewardSets(params: { size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceRewardSetResource> {
-        const fetchArgs = CampaignsRewardsApiFetchParamCreator.getRewardSets(params, options);
+    getRewardSets(params: { size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceRewardSetResource> {
+        const fetchArgs = CampaignsRewardsApiFetchParamCreator.getRewardSets(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -16841,7 +17031,7 @@ export class CampaignsRewardsApi extends BaseAPI {
      * @param id The reward id
      */
     getRewardSet(params: {  id: number; }, options: any = {}) {
-        return CampaignsRewardsApiFp.getRewardSet(params, options)(this.fetch, this.basePath);
+        return CampaignsRewardsApiFp.getRewardSet(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -16851,7 +17041,7 @@ export class CampaignsRewardsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getRewardSets(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-        return CampaignsRewardsApiFp.getRewardSets(params, options)(this.fetch, this.basePath);
+        return CampaignsRewardsApiFp.getRewardSets(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -16890,8 +17080,8 @@ export const CampaignsRewardsApiFactory = function (fetch?: FetchAPI, basePath?:
          * @summary Get a single reward set
          * @param id The reward id
          */
-        getRewardSet(params: {  id: number; }, options: any = {}) {
-            return CampaignsRewardsApiFp.getRewardSet(params, options)(fetch, basePath);
+        getRewardSet(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return CampaignsRewardsApiFp.getRewardSet(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -16900,8 +17090,8 @@ export const CampaignsRewardsApiFactory = function (fetch?: FetchAPI, basePath?:
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getRewardSets(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-            return CampaignsRewardsApiFp.getRewardSets(params, options)(fetch, basePath);
+        getRewardSets(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return CampaignsRewardsApiFp.getRewardSets(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -17088,7 +17278,7 @@ export const CategoriesApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCategories(params: {  filterSearch?: string; filterActive?: boolean; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getCategories(params: {  filterSearch?: string; filterActive?: boolean; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/categories`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -17113,6 +17303,20 @@ export const CategoriesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -17124,7 +17328,7 @@ export const CategoriesApiFetchParamCreator = {
      * @summary Get a single category
      * @param id The id of the category to retrieve
      */
-    getCategory(params: {  id: string; }, options: any = {}): FetchArgs {
+    getCategory(params: {  id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getCategory");
@@ -17137,6 +17341,20 @@ export const CategoriesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -17235,7 +17453,7 @@ export const CategoriesApiFetchParamCreator = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getTags(params: {  size?: number; page?: number; }, options: any = {}): FetchArgs {
+    getTags(params: {  size?: number; page?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/tags`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -17250,6 +17468,20 @@ export const CategoriesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -17429,8 +17661,8 @@ export const CategoriesApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCategories(params: { filterSearch?: string; filterActive?: boolean; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCategoryResource> {
-        const fetchArgs = CategoriesApiFetchParamCreator.getCategories(params, options);
+    getCategories(params: { filterSearch?: string; filterActive?: boolean; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCategoryResource> {
+        const fetchArgs = CategoriesApiFetchParamCreator.getCategories(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -17446,8 +17678,8 @@ export const CategoriesApiFp = {
      * @summary Get a single category
      * @param id The id of the category to retrieve
      */
-    getCategory(params: { id: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CategoryResource> {
-        const fetchArgs = CategoriesApiFetchParamCreator.getCategory(params, options);
+    getCategory(params: { id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CategoryResource> {
+        const fetchArgs = CategoriesApiFetchParamCreator.getCategory(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -17500,8 +17732,8 @@ export const CategoriesApiFp = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getTags(params: { size?: number; page?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourcestring> {
-        const fetchArgs = CategoriesApiFetchParamCreator.getTags(params, options);
+    getTags(params: { size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourcestring> {
+        const fetchArgs = CategoriesApiFetchParamCreator.getTags(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -17597,7 +17829,7 @@ export class CategoriesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getCategories(params: {  filterSearch?: string; filterActive?: boolean; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return CategoriesApiFp.getCategories(params, options)(this.fetch, this.basePath);
+        return CategoriesApiFp.getCategories(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -17605,7 +17837,7 @@ export class CategoriesApi extends BaseAPI {
      * @param id The id of the category to retrieve
      */
     getCategory(params: {  id: string; }, options: any = {}) {
-        return CategoriesApiFp.getCategory(params, options)(this.fetch, this.basePath);
+        return CategoriesApiFp.getCategory(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -17632,7 +17864,7 @@ export class CategoriesApi extends BaseAPI {
      * @param page The number of the page returned, starting with 1
      */
     getTags(params: {  size?: number; page?: number; }, options: any = {}) {
-        return CategoriesApiFp.getTags(params, options)(this.fetch, this.basePath);
+        return CategoriesApiFp.getTags(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -17701,16 +17933,16 @@ export const CategoriesApiFactory = function (fetch?: FetchAPI, basePath?: strin
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getCategories(params: {  filterSearch?: string; filterActive?: boolean; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return CategoriesApiFp.getCategories(params, options)(fetch, basePath);
+        getCategories(params: {  filterSearch?: string; filterActive?: boolean; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return CategoriesApiFp.getCategories(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
          * @summary Get a single category
          * @param id The id of the category to retrieve
          */
-        getCategory(params: {  id: string; }, options: any = {}) {
-            return CategoriesApiFp.getCategory(params, options)(fetch, basePath);
+        getCategory(params: {  id: string; }, configuration: Configuration, options: any = {}) {
+            return CategoriesApiFp.getCategory(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -17736,8 +17968,8 @@ export const CategoriesApiFactory = function (fetch?: FetchAPI, basePath?: strin
          * @param size The number of objects returned per page
          * @param page The number of the page returned, starting with 1
          */
-        getTags(params: {  size?: number; page?: number; }, options: any = {}) {
-            return CategoriesApiFp.getTags(params, options)(fetch, basePath);
+        getTags(params: {  size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
+            return CategoriesApiFp.getTags(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -17847,7 +18079,7 @@ export const ConfigsApiFetchParamCreator = {
      * @summary Get a single config
      * @param name The config name
      */
-    getConfig(params: {  name: string; }, options: any = {}): FetchArgs {
+    getConfig(params: {  name: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "name" is set
         if (params["name"] == null) {
             throw new Error("Missing required parameter name when calling getConfig");
@@ -17860,6 +18092,20 @@ export const ConfigsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -17875,7 +18121,7 @@ export const ConfigsApiFetchParamCreator = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getConfigs(params: {  filterSearch?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getConfigs(params: {  filterSearch?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/configs`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -17896,6 +18142,20 @@ export const ConfigsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -17992,8 +18252,8 @@ export const ConfigsApiFp = {
      * @summary Get a single config
      * @param name The config name
      */
-    getConfig(params: { name: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Config> {
-        const fetchArgs = ConfigsApiFetchParamCreator.getConfig(params, options);
+    getConfig(params: { name: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Config> {
+        const fetchArgs = ConfigsApiFetchParamCreator.getConfig(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -18012,8 +18272,8 @@ export const ConfigsApiFp = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getConfigs(params: { filterSearch?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceConfig> {
-        const fetchArgs = ConfigsApiFetchParamCreator.getConfigs(params, options);
+    getConfigs(params: { filterSearch?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceConfig> {
+        const fetchArgs = ConfigsApiFetchParamCreator.getConfigs(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -18070,7 +18330,7 @@ export class ConfigsApi extends BaseAPI {
      * @param name The config name
      */
     getConfig(params: {  name: string; }, options: any = {}) {
-        return ConfigsApiFp.getConfig(params, options)(this.fetch, this.basePath);
+        return ConfigsApiFp.getConfig(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -18081,7 +18341,7 @@ export class ConfigsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getConfigs(params: {  filterSearch?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return ConfigsApiFp.getConfigs(params, options)(this.fetch, this.basePath);
+        return ConfigsApiFp.getConfigs(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -18120,8 +18380,8 @@ export const ConfigsApiFactory = function (fetch?: FetchAPI, basePath?: string) 
          * @summary Get a single config
          * @param name The config name
          */
-        getConfig(params: {  name: string; }, options: any = {}) {
-            return ConfigsApiFp.getConfig(params, options)(fetch, basePath);
+        getConfig(params: {  name: string; }, configuration: Configuration, options: any = {}) {
+            return ConfigsApiFp.getConfig(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -18131,8 +18391,8 @@ export const ConfigsApiFactory = function (fetch?: FetchAPI, basePath?: string) 
          * @param page The number of the page returned
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getConfigs(params: {  filterSearch?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return ConfigsApiFp.getConfigs(params, options)(fetch, basePath);
+        getConfigs(params: {  filterSearch?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return ConfigsApiFp.getConfigs(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -18315,7 +18575,7 @@ export const ContentArticlesApiFetchParamCreator = {
      * @summary Get a single article
      * @param id The article id
      */
-    getArticle(params: {  id: string; }, options: any = {}): FetchArgs {
+    getArticle(params: {  id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getArticle");
@@ -18328,6 +18588,20 @@ export const ContentArticlesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -18433,7 +18707,7 @@ export const ContentArticlesApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getArticles(params: {  filterActiveOnly?: boolean; filterCategory?: string; filterTagset?: string; filterTagIntersection?: string; filterTagExclusion?: string; filterTitle?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getArticles(params: {  filterActiveOnly?: boolean; filterCategory?: string; filterTagset?: string; filterTagIntersection?: string; filterTagExclusion?: string; filterTitle?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/content/articles`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -18469,6 +18743,20 @@ export const ContentArticlesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -18644,8 +18932,8 @@ export const ContentArticlesApiFp = {
      * @summary Get a single article
      * @param id The article id
      */
-    getArticle(params: { id: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ArticleResource> {
-        const fetchArgs = ContentArticlesApiFetchParamCreator.getArticle(params, options);
+    getArticle(params: { id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ArticleResource> {
+        const fetchArgs = ContentArticlesApiFetchParamCreator.getArticle(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -18705,8 +18993,8 @@ export const ContentArticlesApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getArticles(params: { filterActiveOnly?: boolean; filterCategory?: string; filterTagset?: string; filterTagIntersection?: string; filterTagExclusion?: string; filterTitle?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceArticleResource> {
-        const fetchArgs = ContentArticlesApiFetchParamCreator.getArticles(params, options);
+    getArticles(params: { filterActiveOnly?: boolean; filterCategory?: string; filterTagset?: string; filterTagIntersection?: string; filterTagExclusion?: string; filterTitle?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceArticleResource> {
+        const fetchArgs = ContentArticlesApiFetchParamCreator.getArticles(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -18798,7 +19086,7 @@ export class ContentArticlesApi extends BaseAPI {
      * @param id The article id
      */
     getArticle(params: {  id: string; }, options: any = {}) {
-        return ContentArticlesApiFp.getArticle(params, options)(this.fetch, this.basePath);
+        return ContentArticlesApiFp.getArticle(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -18832,7 +19120,7 @@ export class ContentArticlesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getArticles(params: {  filterActiveOnly?: boolean; filterCategory?: string; filterTagset?: string; filterTagIntersection?: string; filterTagExclusion?: string; filterTitle?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return ContentArticlesApiFp.getArticles(params, options)(this.fetch, this.basePath);
+        return ContentArticlesApiFp.getArticles(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -18897,8 +19185,8 @@ export const ContentArticlesApiFactory = function (fetch?: FetchAPI, basePath?: 
          * @summary Get a single article
          * @param id The article id
          */
-        getArticle(params: {  id: string; }, options: any = {}) {
-            return ContentArticlesApiFp.getArticle(params, options)(fetch, basePath);
+        getArticle(params: {  id: string; }, configuration: Configuration, options: any = {}) {
+            return ContentArticlesApiFp.getArticle(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -18931,8 +19219,8 @@ export const ContentArticlesApiFactory = function (fetch?: FetchAPI, basePath?: 
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getArticles(params: {  filterActiveOnly?: boolean; filterCategory?: string; filterTagset?: string; filterTagIntersection?: string; filterTagExclusion?: string; filterTitle?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return ContentArticlesApiFp.getArticles(params, options)(fetch, basePath);
+        getArticles(params: {  filterActiveOnly?: boolean; filterCategory?: string; filterTagset?: string; filterTagIntersection?: string; filterTagExclusion?: string; filterTitle?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return ContentArticlesApiFp.getArticles(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -19042,7 +19330,7 @@ export const ContentCommentsApiFetchParamCreator = {
      * @summary Return a comment
      * @param id The comment id
      */
-    getComment(params: {  id: number; }, options: any = {}): FetchArgs {
+    getComment(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getComment");
@@ -19055,6 +19343,20 @@ export const ContentCommentsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -19070,7 +19372,7 @@ export const ContentCommentsApiFetchParamCreator = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getComments(params: {  context: string; contextId: number; size?: number; page?: number; }, options: any = {}): FetchArgs {
+    getComments(params: {  context: string; contextId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "context" is set
         if (params["context"] == null) {
             throw new Error("Missing required parameter context when calling getComments");
@@ -19099,6 +19401,20 @@ export const ContentCommentsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -19242,8 +19558,8 @@ export const ContentCommentsApiFp = {
      * @summary Return a comment
      * @param id The comment id
      */
-    getComment(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CommentResource> {
-        const fetchArgs = ContentCommentsApiFetchParamCreator.getComment(params, options);
+    getComment(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CommentResource> {
+        const fetchArgs = ContentCommentsApiFetchParamCreator.getComment(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -19262,8 +19578,8 @@ export const ContentCommentsApiFp = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getComments(params: { context: string; contextId: number; size?: number; page?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCommentResource> {
-        const fetchArgs = ContentCommentsApiFetchParamCreator.getComments(params, options);
+    getComments(params: { context: string; contextId: number; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCommentResource> {
+        const fetchArgs = ContentCommentsApiFetchParamCreator.getComments(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -19339,7 +19655,7 @@ export class ContentCommentsApi extends BaseAPI {
      * @param id The comment id
      */
     getComment(params: {  id: number; }, options: any = {}) {
-        return ContentCommentsApiFp.getComment(params, options)(this.fetch, this.basePath);
+        return ContentCommentsApiFp.getComment(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -19350,7 +19666,7 @@ export class ContentCommentsApi extends BaseAPI {
      * @param page The number of the page returned, starting with 1
      */
     getComments(params: {  context: string; contextId: number; size?: number; page?: number; }, options: any = {}) {
-        return ContentCommentsApiFp.getComments(params, options)(this.fetch, this.basePath);
+        return ContentCommentsApiFp.getComments(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * The body is an ElasticSearch query json. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html'>documentation</a> for details on the format and search options
@@ -19399,8 +19715,8 @@ export const ContentCommentsApiFactory = function (fetch?: FetchAPI, basePath?: 
          * @summary Return a comment
          * @param id The comment id
          */
-        getComment(params: {  id: number; }, options: any = {}) {
-            return ContentCommentsApiFp.getComment(params, options)(fetch, basePath);
+        getComment(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return ContentCommentsApiFp.getComment(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -19410,8 +19726,8 @@ export const ContentCommentsApiFactory = function (fetch?: FetchAPI, basePath?: 
          * @param size The number of objects returned per page
          * @param page The number of the page returned, starting with 1
          */
-        getComments(params: {  context: string; contextId: number; size?: number; page?: number; }, options: any = {}) {
-            return ContentCommentsApiFp.getComments(params, options)(fetch, basePath);
+        getComments(params: {  context: string; contextId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
+            return ContentCommentsApiFp.getComments(params, configuration, options)(fetch, basePath);
         },
         /**
          * The body is an ElasticSearch query json. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html'>documentation</a> for details on the format and search options
@@ -19648,7 +19964,7 @@ export const ContentPollsApiFetchParamCreator = {
      * @summary Get a single poll
      * @param id The poll id
      */
-    getPoll(params: {  id: string; }, options: any = {}): FetchArgs {
+    getPoll(params: {  id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getPoll");
@@ -19661,6 +19977,20 @@ export const ContentPollsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -19802,7 +20132,7 @@ export const ContentPollsApiFetchParamCreator = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getPolls(params: {  filterCategory?: string; filterTagset?: string; filterText?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getPolls(params: {  filterCategory?: string; filterTagset?: string; filterText?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/media/polls`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -19829,6 +20159,20 @@ export const ContentPollsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -20022,8 +20366,8 @@ export const ContentPollsApiFp = {
      * @summary Get a single poll
      * @param id The poll id
      */
-    getPoll(params: { id: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PollResource> {
-        const fetchArgs = ContentPollsApiFetchParamCreator.getPoll(params, options);
+    getPoll(params: { id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PollResource> {
+        const fetchArgs = ContentPollsApiFetchParamCreator.getPoll(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -20097,8 +20441,8 @@ export const ContentPollsApiFp = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getPolls(params: { filterCategory?: string; filterTagset?: string; filterText?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourcePollResource> {
-        const fetchArgs = ContentPollsApiFetchParamCreator.getPolls(params, options);
+    getPolls(params: { filterCategory?: string; filterTagset?: string; filterText?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourcePollResource> {
+        const fetchArgs = ContentPollsApiFetchParamCreator.getPolls(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -20199,7 +20543,7 @@ export class ContentPollsApi extends BaseAPI {
      * @param id The poll id
      */
     getPoll(params: {  id: string; }, options: any = {}) {
-        return ContentPollsApiFp.getPoll(params, options)(this.fetch, this.basePath);
+        return ContentPollsApiFp.getPoll(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -20238,7 +20582,7 @@ export class ContentPollsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getPolls(params: {  filterCategory?: string; filterTagset?: string; filterText?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return ContentPollsApiFp.getPolls(params, options)(this.fetch, this.basePath);
+        return ContentPollsApiFp.getPolls(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -20312,8 +20656,8 @@ export const ContentPollsApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @summary Get a single poll
          * @param id The poll id
          */
-        getPoll(params: {  id: string; }, options: any = {}) {
-            return ContentPollsApiFp.getPoll(params, options)(fetch, basePath);
+        getPoll(params: {  id: string; }, configuration: Configuration, options: any = {}) {
+            return ContentPollsApiFp.getPoll(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -20351,8 +20695,8 @@ export const ContentPollsApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @param page The number of the page returned
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getPolls(params: {  filterCategory?: string; filterTagset?: string; filterText?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return ContentPollsApiFp.getPolls(params, options)(fetch, basePath);
+        getPolls(params: {  filterCategory?: string; filterTagset?: string; filterText?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return ContentPollsApiFp.getPolls(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -20466,7 +20810,7 @@ export const CurrenciesApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCurrencies(params: {  filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getCurrencies(params: {  filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/currencies`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -20491,6 +20835,20 @@ export const CurrenciesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -20502,7 +20860,7 @@ export const CurrenciesApiFetchParamCreator = {
      * @summary Get a single currency
      * @param code The currency code
      */
-    getCurrency(params: {  code: string; }, options: any = {}): FetchArgs {
+    getCurrency(params: {  code: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "code" is set
         if (params["code"] == null) {
             throw new Error("Missing required parameter code when calling getCurrency");
@@ -20515,6 +20873,20 @@ export const CurrenciesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -20615,8 +20987,8 @@ export const CurrenciesApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCurrencies(params: { filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCurrencyResource> {
-        const fetchArgs = CurrenciesApiFetchParamCreator.getCurrencies(params, options);
+    getCurrencies(params: { filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCurrencyResource> {
+        const fetchArgs = CurrenciesApiFetchParamCreator.getCurrencies(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -20632,8 +21004,8 @@ export const CurrenciesApiFp = {
      * @summary Get a single currency
      * @param code The currency code
      */
-    getCurrency(params: { code: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CurrencyResource> {
-        const fetchArgs = CurrenciesApiFetchParamCreator.getCurrency(params, options);
+    getCurrency(params: { code: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CurrencyResource> {
+        const fetchArgs = CurrenciesApiFetchParamCreator.getCurrency(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -20694,7 +21066,7 @@ export class CurrenciesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getCurrencies(params: {  filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return CurrenciesApiFp.getCurrencies(params, options)(this.fetch, this.basePath);
+        return CurrenciesApiFp.getCurrencies(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -20702,7 +21074,7 @@ export class CurrenciesApi extends BaseAPI {
      * @param code The currency code
      */
     getCurrency(params: {  code: string; }, options: any = {}) {
-        return CurrenciesApiFp.getCurrency(params, options)(this.fetch, this.basePath);
+        return CurrenciesApiFp.getCurrency(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -20745,16 +21117,16 @@ export const CurrenciesApiFactory = function (fetch?: FetchAPI, basePath?: strin
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getCurrencies(params: {  filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return CurrenciesApiFp.getCurrencies(params, options)(fetch, basePath);
+        getCurrencies(params: {  filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return CurrenciesApiFp.getCurrencies(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
          * @summary Get a single currency
          * @param code The currency code
          */
-        getCurrency(params: {  code: string; }, options: any = {}) {
-            return CurrenciesApiFp.getCurrency(params, options)(fetch, basePath);
+        getCurrency(params: {  code: string; }, configuration: Configuration, options: any = {}) {
+            return CurrenciesApiFp.getCurrency(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -21945,7 +22317,7 @@ export const DispositionsApiFetchParamCreator = {
      * @summary Returns a disposition
      * @param id The id of the disposition record
      */
-    getDisposition(params: {  id: number; }, options: any = {}): FetchArgs {
+    getDisposition(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getDisposition");
@@ -21958,6 +22330,20 @@ export const DispositionsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -22106,8 +22492,8 @@ export const DispositionsApiFp = {
      * @summary Returns a disposition
      * @param id The id of the disposition record
      */
-    getDisposition(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<DispositionResource> {
-        const fetchArgs = DispositionsApiFetchParamCreator.getDisposition(params, options);
+    getDisposition(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<DispositionResource> {
+        const fetchArgs = DispositionsApiFetchParamCreator.getDisposition(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -22185,7 +22571,7 @@ export class DispositionsApi extends BaseAPI {
      * @param id The id of the disposition record
      */
     getDisposition(params: {  id: number; }, options: any = {}) {
-        return DispositionsApiFp.getDisposition(params, options)(this.fetch, this.basePath);
+        return DispositionsApiFp.getDisposition(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -22236,8 +22622,8 @@ export const DispositionsApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @summary Returns a disposition
          * @param id The id of the disposition record
          */
-        getDisposition(params: {  id: number; }, options: any = {}) {
-            return DispositionsApiFp.getDisposition(params, options)(fetch, basePath);
+        getDisposition(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return DispositionsApiFp.getDisposition(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -22350,7 +22736,7 @@ export const FulfillmentApiFetchParamCreator = {
      * @summary Get a single fulfillment type
      * @param id The id
      */
-    getFulfillmentType(params: {  id: number; }, options: any = {}): FetchArgs {
+    getFulfillmentType(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getFulfillmentType");
@@ -22363,6 +22749,20 @@ export const FulfillmentApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -22377,7 +22777,7 @@ export const FulfillmentApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getFulfillmentTypes(params: {  size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getFulfillmentTypes(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/store/fulfillment/types`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -22395,6 +22795,20 @@ export const FulfillmentApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -22491,8 +22905,8 @@ export const FulfillmentApiFp = {
      * @summary Get a single fulfillment type
      * @param id The id
      */
-    getFulfillmentType(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<FulfillmentType> {
-        const fetchArgs = FulfillmentApiFetchParamCreator.getFulfillmentType(params, options);
+    getFulfillmentType(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<FulfillmentType> {
+        const fetchArgs = FulfillmentApiFetchParamCreator.getFulfillmentType(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -22510,8 +22924,8 @@ export const FulfillmentApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getFulfillmentTypes(params: { size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceFulfillmentType> {
-        const fetchArgs = FulfillmentApiFetchParamCreator.getFulfillmentTypes(params, options);
+    getFulfillmentTypes(params: { size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceFulfillmentType> {
+        const fetchArgs = FulfillmentApiFetchParamCreator.getFulfillmentTypes(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -22568,7 +22982,7 @@ export class FulfillmentApi extends BaseAPI {
      * @param id The id
      */
     getFulfillmentType(params: {  id: number; }, options: any = {}) {
-        return FulfillmentApiFp.getFulfillmentType(params, options)(this.fetch, this.basePath);
+        return FulfillmentApiFp.getFulfillmentType(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -22578,7 +22992,7 @@ export class FulfillmentApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getFulfillmentTypes(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-        return FulfillmentApiFp.getFulfillmentTypes(params, options)(this.fetch, this.basePath);
+        return FulfillmentApiFp.getFulfillmentTypes(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -22617,8 +23031,8 @@ export const FulfillmentApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @summary Get a single fulfillment type
          * @param id The id
          */
-        getFulfillmentType(params: {  id: number; }, options: any = {}) {
-            return FulfillmentApiFp.getFulfillmentType(params, options)(fetch, basePath);
+        getFulfillmentType(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return FulfillmentApiFp.getFulfillmentType(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -22627,8 +23041,8 @@ export const FulfillmentApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getFulfillmentTypes(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-            return FulfillmentApiFp.getFulfillmentTypes(params, options)(fetch, basePath);
+        getFulfillmentTypes(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return FulfillmentApiFp.getFulfillmentTypes(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -24188,7 +24602,7 @@ export const GamificationLeaderboardsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getLeaderboard(params: {  contextType: string; contextId: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getLeaderboard(params: {  contextType: string; contextId: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "contextType" is set
         if (params["contextType"] == null) {
             throw new Error("Missing required parameter contextType when calling getLeaderboard");
@@ -24217,6 +24631,20 @@ export const GamificationLeaderboardsApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -24230,7 +24658,7 @@ export const GamificationLeaderboardsApiFetchParamCreator = {
      * @param contextId The context id for the leaderboard
      * @param id The id of a user
      */
-    getLeaderboardRank(params: {  contextType: string; contextId: string; id: string; }, options: any = {}): FetchArgs {
+    getLeaderboardRank(params: {  contextType: string; contextId: string; id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "contextType" is set
         if (params["contextType"] == null) {
             throw new Error("Missing required parameter contextType when calling getLeaderboardRank");
@@ -24254,6 +24682,20 @@ export const GamificationLeaderboardsApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -24264,7 +24706,7 @@ export const GamificationLeaderboardsApiFetchParamCreator = {
      * 
      * @summary Get a list of available leaderboard strategy names
      */
-    getLeaderboardStrategies(options: any = {}): FetchArgs {
+    getLeaderboardStrategies(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/leaderboards/strategies`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -24272,6 +24714,20 @@ export const GamificationLeaderboardsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -24294,8 +24750,8 @@ export const GamificationLeaderboardsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getLeaderboard(params: { contextType: string; contextId: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<LeaderboardResource> {
-        const fetchArgs = GamificationLeaderboardsApiFetchParamCreator.getLeaderboard(params, options);
+    getLeaderboard(params: { contextType: string; contextId: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<LeaderboardResource> {
+        const fetchArgs = GamificationLeaderboardsApiFetchParamCreator.getLeaderboard(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -24313,8 +24769,8 @@ export const GamificationLeaderboardsApiFp = {
      * @param contextId The context id for the leaderboard
      * @param id The id of a user
      */
-    getLeaderboardRank(params: { contextType: string; contextId: string; id: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<LeaderboardEntryResource> {
-        const fetchArgs = GamificationLeaderboardsApiFetchParamCreator.getLeaderboardRank(params, options);
+    getLeaderboardRank(params: { contextType: string; contextId: string; id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<LeaderboardEntryResource> {
+        const fetchArgs = GamificationLeaderboardsApiFetchParamCreator.getLeaderboardRank(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -24329,8 +24785,8 @@ export const GamificationLeaderboardsApiFp = {
      * 
      * @summary Get a list of available leaderboard strategy names
      */
-    getLeaderboardStrategies(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<string>> {
-        const fetchArgs = GamificationLeaderboardsApiFetchParamCreator.getLeaderboardStrategies(options);
+    getLeaderboardStrategies(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<string>> {
+        const fetchArgs = GamificationLeaderboardsApiFetchParamCreator.getLeaderboardStrategies(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -24357,7 +24813,7 @@ export class GamificationLeaderboardsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getLeaderboard(params: {  contextType: string; contextId: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return GamificationLeaderboardsApiFp.getLeaderboard(params, options)(this.fetch, this.basePath);
+        return GamificationLeaderboardsApiFp.getLeaderboard(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * The context type identifies the type of entity (i.e., 'activity') being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard
@@ -24367,14 +24823,14 @@ export class GamificationLeaderboardsApi extends BaseAPI {
      * @param id The id of a user
      */
     getLeaderboardRank(params: {  contextType: string; contextId: string; id: string; }, options: any = {}) {
-        return GamificationLeaderboardsApiFp.getLeaderboardRank(params, options)(this.fetch, this.basePath);
+        return GamificationLeaderboardsApiFp.getLeaderboardRank(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
      * @summary Get a list of available leaderboard strategy names
      */
     getLeaderboardStrategies(options: any = {}) {
-        return GamificationLeaderboardsApiFp.getLeaderboardStrategies(options)(this.fetch, this.basePath);
+        return GamificationLeaderboardsApiFp.getLeaderboardStrategies(this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -24392,8 +24848,8 @@ export const GamificationLeaderboardsApiFactory = function (fetch?: FetchAPI, ba
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getLeaderboard(params: {  contextType: string; contextId: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return GamificationLeaderboardsApiFp.getLeaderboard(params, options)(fetch, basePath);
+        getLeaderboard(params: {  contextType: string; contextId: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return GamificationLeaderboardsApiFp.getLeaderboard(params, configuration, options)(fetch, basePath);
         },
         /**
          * The context type identifies the type of entity (i.e., 'activity') being tracked on the leaderboard. The context ID is the unique ID of the actual entity tracked by the leaderboard
@@ -24402,15 +24858,15 @@ export const GamificationLeaderboardsApiFactory = function (fetch?: FetchAPI, ba
          * @param contextId The context id for the leaderboard
          * @param id The id of a user
          */
-        getLeaderboardRank(params: {  contextType: string; contextId: string; id: string; }, options: any = {}) {
-            return GamificationLeaderboardsApiFp.getLeaderboardRank(params, options)(fetch, basePath);
+        getLeaderboardRank(params: {  contextType: string; contextId: string; id: string; }, configuration: Configuration, options: any = {}) {
+            return GamificationLeaderboardsApiFp.getLeaderboardRank(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
          * @summary Get a list of available leaderboard strategy names
          */
-        getLeaderboardStrategies(options: any = {}) {
-            return GamificationLeaderboardsApiFp.getLeaderboardStrategies(options)(fetch, basePath);
+        getLeaderboardStrategies(configuration: Configuration, options: any = {}) {
+            return GamificationLeaderboardsApiFp.getLeaderboardStrategies(configuration, options)(fetch, basePath);
         },
     };
 };
@@ -28023,7 +28479,7 @@ export const InvoicesApiFetchParamCreator = {
      * 
      * @summary Lists available fulfillment statuses
      */
-    getFulFillmentStatuses(options: any = {}): FetchArgs {
+    getFulFillmentStatuses(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/invoices/fulfillment-statuses`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -28031,6 +28487,20 @@ export const InvoicesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -28231,7 +28701,7 @@ export const InvoicesApiFetchParamCreator = {
      * 
      * @summary Lists available payment statuses
      */
-    getPaymentStatuses(options: any = {}): FetchArgs {
+    getPaymentStatuses(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/invoices/payment-statuses`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -28239,6 +28709,20 @@ export const InvoicesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -28607,8 +29091,8 @@ export const InvoicesApiFp = {
      * 
      * @summary Lists available fulfillment statuses
      */
-    getFulFillmentStatuses(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<string>> {
-        const fetchArgs = InvoicesApiFetchParamCreator.getFulFillmentStatuses(options);
+    getFulFillmentStatuses(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<string>> {
+        const fetchArgs = InvoicesApiFetchParamCreator.getFulFillmentStatuses(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -28692,8 +29176,8 @@ export const InvoicesApiFp = {
      * 
      * @summary Lists available payment statuses
      */
-    getPaymentStatuses(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<string>> {
-        const fetchArgs = InvoicesApiFetchParamCreator.getPaymentStatuses(options);
+    getPaymentStatuses(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<string>> {
+        const fetchArgs = InvoicesApiFetchParamCreator.getPaymentStatuses(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -28852,7 +29336,7 @@ export class InvoicesApi extends BaseAPI {
      * @summary Lists available fulfillment statuses
      */
     getFulFillmentStatuses(options: any = {}) {
-        return InvoicesApiFp.getFulFillmentStatuses(options)(this.fetch, this.basePath);
+        return InvoicesApiFp.getFulFillmentStatuses(this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -28901,7 +29385,7 @@ export class InvoicesApi extends BaseAPI {
      * @summary Lists available payment statuses
      */
     getPaymentStatuses(options: any = {}) {
-        return InvoicesApiFp.getPaymentStatuses(options)(this.fetch, this.basePath);
+        return InvoicesApiFp.getPaymentStatuses(this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -28988,8 +29472,8 @@ export const InvoicesApiFactory = function (fetch?: FetchAPI, basePath?: string)
          * 
          * @summary Lists available fulfillment statuses
          */
-        getFulFillmentStatuses(options: any = {}) {
-            return InvoicesApiFp.getFulFillmentStatuses(options)(fetch, basePath);
+        getFulFillmentStatuses(configuration: Configuration, options: any = {}) {
+            return InvoicesApiFp.getFulFillmentStatuses(configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -29037,8 +29521,8 @@ export const InvoicesApiFactory = function (fetch?: FetchAPI, basePath?: string)
          * 
          * @summary Lists available payment statuses
          */
-        getPaymentStatuses(options: any = {}) {
-            return InvoicesApiFp.getPaymentStatuses(options)(fetch, basePath);
+        getPaymentStatuses(configuration: Configuration, options: any = {}) {
+            return InvoicesApiFp.getPaymentStatuses(configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -29118,7 +29602,7 @@ export const LocationsApiFetchParamCreator = {
      * 
      * @summary Get a list of countries
      */
-    getCountries(options: any = {}): FetchArgs {
+    getCountries(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/location/countries`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -29126,6 +29610,20 @@ export const LocationsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -29137,7 +29635,7 @@ export const LocationsApiFetchParamCreator = {
      * Determined by geo ip location
      * @summary Get the iso3 code of your country
      */
-    getCountryByGeoLocation(options: any = {}): FetchArgs {
+    getCountryByGeoLocation(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/location/geolocation/country`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -29145,6 +29643,20 @@ export const LocationsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -29157,7 +29669,7 @@ export const LocationsApiFetchParamCreator = {
      * @summary Get a list of a country's states
      * @param countryCodeIso3 The iso3 code of the country
      */
-    getCountryStates(params: {  countryCodeIso3: string; }, options: any = {}): FetchArgs {
+    getCountryStates(params: {  countryCodeIso3: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "countryCodeIso3" is set
         if (params["countryCodeIso3"] == null) {
             throw new Error("Missing required parameter countryCodeIso3 when calling getCountryStates");
@@ -29171,6 +29683,20 @@ export const LocationsApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -29181,7 +29707,7 @@ export const LocationsApiFetchParamCreator = {
      * Determined by geo ip location, currency to country mapping and a fallback setting
      * @summary Get the currency information of your country
      */
-    getCurrencyByGeoLocation(options: any = {}): FetchArgs {
+    getCurrencyByGeoLocation(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/location/geolocation/currency`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -29189,6 +29715,20 @@ export const LocationsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -29206,8 +29746,8 @@ export const LocationsApiFp = {
      * 
      * @summary Get a list of countries
      */
-    getCountries(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<CountryResource>> {
-        const fetchArgs = LocationsApiFetchParamCreator.getCountries(options);
+    getCountries(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<CountryResource>> {
+        const fetchArgs = LocationsApiFetchParamCreator.getCountries(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -29222,8 +29762,8 @@ export const LocationsApiFp = {
      * Determined by geo ip location
      * @summary Get the iso3 code of your country
      */
-    getCountryByGeoLocation(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<string> {
-        const fetchArgs = LocationsApiFetchParamCreator.getCountryByGeoLocation(options);
+    getCountryByGeoLocation(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<string> {
+        const fetchArgs = LocationsApiFetchParamCreator.getCountryByGeoLocation(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -29239,8 +29779,8 @@ export const LocationsApiFp = {
      * @summary Get a list of a country's states
      * @param countryCodeIso3 The iso3 code of the country
      */
-    getCountryStates(params: { countryCodeIso3: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<StateResource>> {
-        const fetchArgs = LocationsApiFetchParamCreator.getCountryStates(params, options);
+    getCountryStates(params: { countryCodeIso3: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<StateResource>> {
+        const fetchArgs = LocationsApiFetchParamCreator.getCountryStates(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -29255,8 +29795,8 @@ export const LocationsApiFp = {
      * Determined by geo ip location, currency to country mapping and a fallback setting
      * @summary Get the currency information of your country
      */
-    getCurrencyByGeoLocation(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CurrencyResource> {
-        const fetchArgs = LocationsApiFetchParamCreator.getCurrencyByGeoLocation(options);
+    getCurrencyByGeoLocation(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CurrencyResource> {
+        const fetchArgs = LocationsApiFetchParamCreator.getCurrencyByGeoLocation(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -29278,14 +29818,14 @@ export class LocationsApi extends BaseAPI {
      * @summary Get a list of countries
      */
     getCountries(options: any = {}) {
-        return LocationsApiFp.getCountries(options)(this.fetch, this.basePath);
+        return LocationsApiFp.getCountries(this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Determined by geo ip location
      * @summary Get the iso3 code of your country
      */
     getCountryByGeoLocation(options: any = {}) {
-        return LocationsApiFp.getCountryByGeoLocation(options)(this.fetch, this.basePath);
+        return LocationsApiFp.getCountryByGeoLocation(this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -29293,14 +29833,14 @@ export class LocationsApi extends BaseAPI {
      * @param countryCodeIso3 The iso3 code of the country
      */
     getCountryStates(params: {  countryCodeIso3: string; }, options: any = {}) {
-        return LocationsApiFp.getCountryStates(params, options)(this.fetch, this.basePath);
+        return LocationsApiFp.getCountryStates(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Determined by geo ip location, currency to country mapping and a fallback setting
      * @summary Get the currency information of your country
      */
     getCurrencyByGeoLocation(options: any = {}) {
-        return LocationsApiFp.getCurrencyByGeoLocation(options)(this.fetch, this.basePath);
+        return LocationsApiFp.getCurrencyByGeoLocation(this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -29313,30 +29853,30 @@ export const LocationsApiFactory = function (fetch?: FetchAPI, basePath?: string
          * 
          * @summary Get a list of countries
          */
-        getCountries(options: any = {}) {
-            return LocationsApiFp.getCountries(options)(fetch, basePath);
+        getCountries(configuration: Configuration, options: any = {}) {
+            return LocationsApiFp.getCountries(configuration, options)(fetch, basePath);
         },
         /**
          * Determined by geo ip location
          * @summary Get the iso3 code of your country
          */
-        getCountryByGeoLocation(options: any = {}) {
-            return LocationsApiFp.getCountryByGeoLocation(options)(fetch, basePath);
+        getCountryByGeoLocation(configuration: Configuration, options: any = {}) {
+            return LocationsApiFp.getCountryByGeoLocation(configuration, options)(fetch, basePath);
         },
         /**
          * 
          * @summary Get a list of a country's states
          * @param countryCodeIso3 The iso3 code of the country
          */
-        getCountryStates(params: {  countryCodeIso3: string; }, options: any = {}) {
-            return LocationsApiFp.getCountryStates(params, options)(fetch, basePath);
+        getCountryStates(params: {  countryCodeIso3: string; }, configuration: Configuration, options: any = {}) {
+            return LocationsApiFp.getCountryStates(params, configuration, options)(fetch, basePath);
         },
         /**
          * Determined by geo ip location, currency to country mapping and a fallback setting
          * @summary Get the currency information of your country
          */
-        getCurrencyByGeoLocation(options: any = {}) {
-            return LocationsApiFp.getCurrencyByGeoLocation(options)(fetch, basePath);
+        getCurrencyByGeoLocation(configuration: Configuration, options: any = {}) {
+            return LocationsApiFp.getCurrencyByGeoLocation(configuration, options)(fetch, basePath);
         },
     };
 };
@@ -30136,7 +30676,7 @@ export const MediaArtistsApiFetchParamCreator = {
      * @param id The artist id
      * @param showContributions The number of contributions to show fetch
      */
-    getArtist(params: {  id: number; showContributions?: number; }, options: any = {}): FetchArgs {
+    getArtist(params: {  id: number; showContributions?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getArtist");
@@ -30153,6 +30693,20 @@ export const MediaArtistsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -30253,7 +30807,7 @@ export const MediaArtistsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getArtists(params: {  filterArtistsByName?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getArtists(params: {  filterArtistsByName?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/media/artists`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -30274,6 +30828,20 @@ export const MediaArtistsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -30450,8 +31018,8 @@ export const MediaArtistsApiFp = {
      * @param id The artist id
      * @param showContributions The number of contributions to show fetch
      */
-    getArtist(params: { id: number; showContributions?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ArtistResource> {
-        const fetchArgs = MediaArtistsApiFetchParamCreator.getArtist(params, options);
+    getArtist(params: { id: number; showContributions?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ArtistResource> {
+        const fetchArgs = MediaArtistsApiFetchParamCreator.getArtist(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -30506,8 +31074,8 @@ export const MediaArtistsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getArtists(params: { filterArtistsByName?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceArtistResource> {
-        const fetchArgs = MediaArtistsApiFetchParamCreator.getArtists(params, options);
+    getArtists(params: { filterArtistsByName?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceArtistResource> {
+        const fetchArgs = MediaArtistsApiFetchParamCreator.getArtists(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -30600,7 +31168,7 @@ export class MediaArtistsApi extends BaseAPI {
      * @param showContributions The number of contributions to show fetch
      */
     getArtist(params: {  id: number; showContributions?: number; }, options: any = {}) {
-        return MediaArtistsApiFp.getArtist(params, options)(this.fetch, this.basePath);
+        return MediaArtistsApiFp.getArtist(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -30629,7 +31197,7 @@ export class MediaArtistsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getArtists(params: {  filterArtistsByName?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return MediaArtistsApiFp.getArtists(params, options)(this.fetch, this.basePath);
+        return MediaArtistsApiFp.getArtists(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -30695,8 +31263,8 @@ export const MediaArtistsApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @param id The artist id
          * @param showContributions The number of contributions to show fetch
          */
-        getArtist(params: {  id: number; showContributions?: number; }, options: any = {}) {
-            return MediaArtistsApiFp.getArtist(params, options)(fetch, basePath);
+        getArtist(params: {  id: number; showContributions?: number; }, configuration: Configuration, options: any = {}) {
+            return MediaArtistsApiFp.getArtist(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -30724,8 +31292,8 @@ export const MediaArtistsApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getArtists(params: {  filterArtistsByName?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return MediaArtistsApiFp.getArtists(params, options)(fetch, basePath);
+        getArtists(params: {  filterArtistsByName?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return MediaArtistsApiFp.getArtists(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -31893,7 +32461,7 @@ export const MediaVideosApiFetchParamCreator = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getVideoComments(params: {  videoId: number; size?: number; page?: number; }, options: any = {}): FetchArgs {
+    getVideoComments(params: {  videoId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "videoId" is set
         if (params["videoId"] == null) {
             throw new Error("Missing required parameter videoId when calling getVideoComments");
@@ -31914,6 +32482,20 @@ export const MediaVideosApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -31927,7 +32509,7 @@ export const MediaVideosApiFetchParamCreator = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getVideoDispositions(params: {  videoId: number; size?: number; page?: number; }, options: any = {}): FetchArgs {
+    getVideoDispositions(params: {  videoId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "videoId" is set
         if (params["videoId"] == null) {
             throw new Error("Missing required parameter videoId when calling getVideoDispositions");
@@ -31948,6 +32530,20 @@ export const MediaVideosApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -31961,7 +32557,7 @@ export const MediaVideosApiFetchParamCreator = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getVideoRelationships(params: {  videoId: number; size?: number; page?: number; }, options: any = {}): FetchArgs {
+    getVideoRelationships(params: {  videoId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "videoId" is set
         if (params["videoId"] == null) {
             throw new Error("Missing required parameter videoId when calling getVideoRelationships");
@@ -31981,6 +32577,20 @@ export const MediaVideosApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -32007,7 +32617,7 @@ export const MediaVideosApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getVideos(params: {  excludeFlagged?: boolean; filterVideosByUploader?: number; filterCategory?: string; filterTagset?: string; filterVideosByName?: string; filterVideosByContributor?: number; filterVideosByAuthor?: number; filterHasAuthor?: boolean; filterHasUploader?: boolean; filterRelatedTo?: string; filterFriends?: boolean; filterDisposition?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getVideos(params: {  excludeFlagged?: boolean; filterVideosByUploader?: number; filterCategory?: string; filterTagset?: string; filterVideosByName?: string; filterVideosByContributor?: number; filterVideosByAuthor?: number; filterHasAuthor?: boolean; filterHasUploader?: boolean; filterRelatedTo?: string; filterFriends?: boolean; filterDisposition?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/media/videos`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -32061,6 +32671,20 @@ export const MediaVideosApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -32603,8 +33227,8 @@ export const MediaVideosApiFp = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getVideoComments(params: { videoId: number; size?: number; page?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCommentResource> {
-        const fetchArgs = MediaVideosApiFetchParamCreator.getVideoComments(params, options);
+    getVideoComments(params: { videoId: number; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCommentResource> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.getVideoComments(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -32622,8 +33246,8 @@ export const MediaVideosApiFp = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getVideoDispositions(params: { videoId: number; size?: number; page?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceDispositionResource> {
-        const fetchArgs = MediaVideosApiFetchParamCreator.getVideoDispositions(params, options);
+    getVideoDispositions(params: { videoId: number; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceDispositionResource> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.getVideoDispositions(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -32641,8 +33265,8 @@ export const MediaVideosApiFp = {
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      */
-    getVideoRelationships(params: { videoId: number; size?: number; page?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceVideoRelationshipResource> {
-        const fetchArgs = MediaVideosApiFetchParamCreator.getVideoRelationships(params, options);
+    getVideoRelationships(params: { videoId: number; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceVideoRelationshipResource> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.getVideoRelationships(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -32672,8 +33296,8 @@ export const MediaVideosApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getVideos(params: { excludeFlagged?: boolean; filterVideosByUploader?: number; filterCategory?: string; filterTagset?: string; filterVideosByName?: string; filterVideosByContributor?: number; filterVideosByAuthor?: number; filterHasAuthor?: boolean; filterHasUploader?: boolean; filterRelatedTo?: string; filterFriends?: boolean; filterDisposition?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceVideoResource> {
-        const fetchArgs = MediaVideosApiFetchParamCreator.getVideos(params, options);
+    getVideos(params: { excludeFlagged?: boolean; filterVideosByUploader?: number; filterCategory?: string; filterTagset?: string; filterVideosByName?: string; filterVideosByContributor?: number; filterVideosByAuthor?: number; filterHasAuthor?: boolean; filterHasUploader?: boolean; filterRelatedTo?: string; filterFriends?: boolean; filterDisposition?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceVideoResource> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.getVideos(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -32930,7 +33554,7 @@ export class MediaVideosApi extends BaseAPI {
      * @param page The number of the page returned, starting with 1
      */
     getVideoComments(params: {  videoId: number; size?: number; page?: number; }, options: any = {}) {
-        return MediaVideosApiFp.getVideoComments(params, options)(this.fetch, this.basePath);
+        return MediaVideosApiFp.getVideoComments(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -32940,7 +33564,7 @@ export class MediaVideosApi extends BaseAPI {
      * @param page The number of the page returned, starting with 1
      */
     getVideoDispositions(params: {  videoId: number; size?: number; page?: number; }, options: any = {}) {
-        return MediaVideosApiFp.getVideoDispositions(params, options)(this.fetch, this.basePath);
+        return MediaVideosApiFp.getVideoDispositions(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -32950,7 +33574,7 @@ export class MediaVideosApi extends BaseAPI {
      * @param page The number of the page returned, starting with 1
      */
     getVideoRelationships(params: {  videoId: number; size?: number; page?: number; }, options: any = {}) {
-        return MediaVideosApiFp.getVideoRelationships(params, options)(this.fetch, this.basePath);
+        return MediaVideosApiFp.getVideoRelationships(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -32972,7 +33596,7 @@ export class MediaVideosApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getVideos(params: {  excludeFlagged?: boolean; filterVideosByUploader?: number; filterCategory?: string; filterTagset?: string; filterVideosByName?: string; filterVideosByContributor?: number; filterVideosByAuthor?: number; filterHasAuthor?: boolean; filterHasUploader?: boolean; filterRelatedTo?: string; filterFriends?: boolean; filterDisposition?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return MediaVideosApiFp.getVideos(params, options)(this.fetch, this.basePath);
+        return MediaVideosApiFp.getVideos(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Remove the user with the id given in the path from the whitelist of users that can view this video regardless of privacy setting.
@@ -33166,8 +33790,8 @@ export const MediaVideosApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param size The number of objects returned per page
          * @param page The number of the page returned, starting with 1
          */
-        getVideoComments(params: {  videoId: number; size?: number; page?: number; }, options: any = {}) {
-            return MediaVideosApiFp.getVideoComments(params, options)(fetch, basePath);
+        getVideoComments(params: {  videoId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.getVideoComments(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -33176,8 +33800,8 @@ export const MediaVideosApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param size The number of objects returned per page
          * @param page The number of the page returned, starting with 1
          */
-        getVideoDispositions(params: {  videoId: number; size?: number; page?: number; }, options: any = {}) {
-            return MediaVideosApiFp.getVideoDispositions(params, options)(fetch, basePath);
+        getVideoDispositions(params: {  videoId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.getVideoDispositions(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -33186,8 +33810,8 @@ export const MediaVideosApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param size The number of objects returned per page
          * @param page The number of the page returned, starting with 1
          */
-        getVideoRelationships(params: {  videoId: number; size?: number; page?: number; }, options: any = {}) {
-            return MediaVideosApiFp.getVideoRelationships(params, options)(fetch, basePath);
+        getVideoRelationships(params: {  videoId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.getVideoRelationships(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -33208,8 +33832,8 @@ export const MediaVideosApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getVideos(params: {  excludeFlagged?: boolean; filterVideosByUploader?: number; filterCategory?: string; filterTagset?: string; filterVideosByName?: string; filterVideosByContributor?: number; filterVideosByAuthor?: number; filterHasAuthor?: boolean; filterHasUploader?: boolean; filterRelatedTo?: string; filterFriends?: boolean; filterDisposition?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return MediaVideosApiFp.getVideos(params, options)(fetch, basePath);
+        getVideos(params: {  excludeFlagged?: boolean; filterVideosByUploader?: number; filterCategory?: string; filterTagset?: string; filterVideosByName?: string; filterVideosByContributor?: number; filterVideosByAuthor?: number; filterHasAuthor?: boolean; filterHasUploader?: boolean; filterRelatedTo?: string; filterFriends?: boolean; filterDisposition?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.getVideos(params, configuration, options)(fetch, basePath);
         },
         /**
          * Remove the user with the id given in the path from the whitelist of users that can view this video regardless of privacy setting.
@@ -33909,7 +34533,7 @@ export const ObjectsApiFetchParamCreator = {
      * @param templateId The id of the template this object is part of
      * @param objectId The id of the object
      */
-    getObjectItem(params: {  templateId: string; objectId: number; }, options: any = {}): FetchArgs {
+    getObjectItem(params: {  templateId: string; objectId: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "templateId" is set
         if (params["templateId"] == null) {
             throw new Error("Missing required parameter templateId when calling getObjectItem");
@@ -33928,6 +34552,20 @@ export const ObjectsApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -33942,7 +34580,7 @@ export const ObjectsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getObjectItems(params: {  templateId: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getObjectItems(params: {  templateId: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "templateId" is set
         if (params["templateId"] == null) {
             throw new Error("Missing required parameter templateId when calling getObjectItems");
@@ -33965,6 +34603,20 @@ export const ObjectsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -34240,8 +34892,8 @@ export const ObjectsApiFp = {
      * @param templateId The id of the template this object is part of
      * @param objectId The id of the object
      */
-    getObjectItem(params: { templateId: string; objectId: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ObjectResource> {
-        const fetchArgs = ObjectsApiFetchParamCreator.getObjectItem(params, options);
+    getObjectItem(params: { templateId: string; objectId: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ObjectResource> {
+        const fetchArgs = ObjectsApiFetchParamCreator.getObjectItem(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -34260,8 +34912,8 @@ export const ObjectsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getObjectItems(params: { templateId: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceObjectResource> {
-        const fetchArgs = ObjectsApiFetchParamCreator.getObjectItems(params, options);
+    getObjectItems(params: { templateId: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceObjectResource> {
+        const fetchArgs = ObjectsApiFetchParamCreator.getObjectItems(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -34395,7 +35047,7 @@ export class ObjectsApi extends BaseAPI {
      * @param objectId The id of the object
      */
     getObjectItem(params: {  templateId: string; objectId: number; }, options: any = {}) {
-        return ObjectsApiFp.getObjectItem(params, options)(this.fetch, this.basePath);
+        return ObjectsApiFp.getObjectItem(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -34406,7 +35058,7 @@ export class ObjectsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getObjectItems(params: {  templateId: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return ObjectsApiFp.getObjectItems(params, options)(this.fetch, this.basePath);
+        return ObjectsApiFp.getObjectItems(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -34495,8 +35147,8 @@ export const ObjectsApiFactory = function (fetch?: FetchAPI, basePath?: string) 
          * @param templateId The id of the template this object is part of
          * @param objectId The id of the object
          */
-        getObjectItem(params: {  templateId: string; objectId: number; }, options: any = {}) {
-            return ObjectsApiFp.getObjectItem(params, options)(fetch, basePath);
+        getObjectItem(params: {  templateId: string; objectId: number; }, configuration: Configuration, options: any = {}) {
+            return ObjectsApiFp.getObjectItem(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -34506,8 +35158,8 @@ export const ObjectsApiFactory = function (fetch?: FetchAPI, basePath?: string) 
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getObjectItems(params: {  templateId: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return ObjectsApiFp.getObjectItems(params, options)(fetch, basePath);
+        getObjectItems(params: {  templateId: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return ObjectsApiFp.getObjectItems(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -34694,7 +35346,7 @@ export const PaymentsApiFetchParamCreator = {
      * @summary Get a single payment method type
      * @param id ID of the payment method type being retrieved
      */
-    getPaymentMethodType(params: {  id: number; }, options: any = {}): FetchArgs {
+    getPaymentMethodType(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getPaymentMethodType");
@@ -34707,6 +35359,20 @@ export const PaymentsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -34722,7 +35388,7 @@ export const PaymentsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getPaymentMethodTypes(params: {  filterName?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getPaymentMethodTypes(params: {  filterName?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/payment/types`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -34743,6 +35409,20 @@ export const PaymentsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -35010,8 +35690,8 @@ export const PaymentsApiFp = {
      * @summary Get a single payment method type
      * @param id ID of the payment method type being retrieved
      */
-    getPaymentMethodType(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PaymentMethodTypeResource> {
-        const fetchArgs = PaymentsApiFetchParamCreator.getPaymentMethodType(params, options);
+    getPaymentMethodType(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PaymentMethodTypeResource> {
+        const fetchArgs = PaymentsApiFetchParamCreator.getPaymentMethodType(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -35030,8 +35710,8 @@ export const PaymentsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getPaymentMethodTypes(params: { filterName?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourcePaymentMethodTypeResource> {
-        const fetchArgs = PaymentsApiFetchParamCreator.getPaymentMethodTypes(params, options);
+    getPaymentMethodTypes(params: { filterName?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourcePaymentMethodTypeResource> {
+        const fetchArgs = PaymentsApiFetchParamCreator.getPaymentMethodTypes(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -35158,7 +35838,7 @@ export class PaymentsApi extends BaseAPI {
      * @param id ID of the payment method type being retrieved
      */
     getPaymentMethodType(params: {  id: number; }, options: any = {}) {
-        return PaymentsApiFp.getPaymentMethodType(params, options)(this.fetch, this.basePath);
+        return PaymentsApiFp.getPaymentMethodType(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -35169,7 +35849,7 @@ export class PaymentsApi extends BaseAPI {
      * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getPaymentMethodTypes(params: {  filterName?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return PaymentsApiFp.getPaymentMethodTypes(params, options)(this.fetch, this.basePath);
+        return PaymentsApiFp.getPaymentMethodTypes(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -35251,8 +35931,8 @@ export const PaymentsApiFactory = function (fetch?: FetchAPI, basePath?: string)
          * @summary Get a single payment method type
          * @param id ID of the payment method type being retrieved
          */
-        getPaymentMethodType(params: {  id: number; }, options: any = {}) {
-            return PaymentsApiFp.getPaymentMethodType(params, options)(fetch, basePath);
+        getPaymentMethodType(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return PaymentsApiFp.getPaymentMethodType(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -35262,8 +35942,8 @@ export const PaymentsApiFactory = function (fetch?: FetchAPI, basePath?: string)
          * @param page The number of the page returned, starting with 1
          * @param order a comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getPaymentMethodTypes(params: {  filterName?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return PaymentsApiFp.getPaymentMethodTypes(params, options)(fetch, basePath);
+        getPaymentMethodTypes(params: {  filterName?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return PaymentsApiFp.getPaymentMethodTypes(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -35319,7 +35999,7 @@ export const PaymentsAppleApiFetchParamCreator = {
      * @summary Pay invoice with Apple receipt
      * @param request The request for paying an invoice through an Apple receipt
      */
-    verifyAppleReceipt(params: {  request?: ApplyPaymentRequest; }, options: any = {}): FetchArgs {
+    verifyAppleReceipt(params: {  request?: ApplyPaymentRequest; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/payment/provider/apple/receipt`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
@@ -35331,6 +36011,20 @@ export const PaymentsAppleApiFetchParamCreator = {
         }
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -35349,8 +36043,8 @@ export const PaymentsAppleApiFp = {
      * @summary Pay invoice with Apple receipt
      * @param request The request for paying an invoice through an Apple receipt
      */
-    verifyAppleReceipt(params: { request?: ApplyPaymentRequest;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<string> {
-        const fetchArgs = PaymentsAppleApiFetchParamCreator.verifyAppleReceipt(params, options);
+    verifyAppleReceipt(params: { request?: ApplyPaymentRequest;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<string> {
+        const fetchArgs = PaymentsAppleApiFetchParamCreator.verifyAppleReceipt(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -35373,7 +36067,7 @@ export class PaymentsAppleApi extends BaseAPI {
      * @param request The request for paying an invoice through an Apple receipt
      */
     verifyAppleReceipt(params: {  request?: ApplyPaymentRequest; }, options: any = {}) {
-        return PaymentsAppleApiFp.verifyAppleReceipt(params, options)(this.fetch, this.basePath);
+        return PaymentsAppleApiFp.verifyAppleReceipt(params, this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -35387,8 +36081,8 @@ export const PaymentsAppleApiFactory = function (fetch?: FetchAPI, basePath?: st
          * @summary Pay invoice with Apple receipt
          * @param request The request for paying an invoice through an Apple receipt
          */
-        verifyAppleReceipt(params: {  request?: ApplyPaymentRequest; }, options: any = {}) {
-            return PaymentsAppleApiFp.verifyAppleReceipt(params, options)(fetch, basePath);
+        verifyAppleReceipt(params: {  request?: ApplyPaymentRequest; }, configuration: Configuration, options: any = {}) {
+            return PaymentsAppleApiFp.verifyAppleReceipt(params, configuration, options)(fetch, basePath);
         },
     };
 };
@@ -35501,7 +36195,7 @@ export const PaymentsGoogleApiFetchParamCreator = {
      * @summary Mark an invoice paid with Google
      * @param request The request for paying an invoice through a Google in-app payment
      */
-    handleGooglePayment(params: {  request?: GooglePaymentRequest; }, options: any = {}): FetchArgs {
+    handleGooglePayment(params: {  request?: GooglePaymentRequest; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/payment/provider/google/payments`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
@@ -35513,6 +36207,20 @@ export const PaymentsGoogleApiFetchParamCreator = {
         }
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -35531,8 +36239,8 @@ export const PaymentsGoogleApiFp = {
      * @summary Mark an invoice paid with Google
      * @param request The request for paying an invoice through a Google in-app payment
      */
-    handleGooglePayment(params: { request?: GooglePaymentRequest;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<number> {
-        const fetchArgs = PaymentsGoogleApiFetchParamCreator.handleGooglePayment(params, options);
+    handleGooglePayment(params: { request?: GooglePaymentRequest;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<number> {
+        const fetchArgs = PaymentsGoogleApiFetchParamCreator.handleGooglePayment(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -35555,7 +36263,7 @@ export class PaymentsGoogleApi extends BaseAPI {
      * @param request The request for paying an invoice through a Google in-app payment
      */
     handleGooglePayment(params: {  request?: GooglePaymentRequest; }, options: any = {}) {
-        return PaymentsGoogleApiFp.handleGooglePayment(params, options)(this.fetch, this.basePath);
+        return PaymentsGoogleApiFp.handleGooglePayment(params, this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -35569,8 +36277,8 @@ export const PaymentsGoogleApiFactory = function (fetch?: FetchAPI, basePath?: s
          * @summary Mark an invoice paid with Google
          * @param request The request for paying an invoice through a Google in-app payment
          */
-        handleGooglePayment(params: {  request?: GooglePaymentRequest; }, options: any = {}) {
-            return PaymentsGoogleApiFp.handleGooglePayment(params, options)(fetch, basePath);
+        handleGooglePayment(params: {  request?: GooglePaymentRequest; }, configuration: Configuration, options: any = {}) {
+            return PaymentsGoogleApiFp.handleGooglePayment(params, configuration, options)(fetch, basePath);
         },
     };
 };
@@ -36032,7 +36740,7 @@ export const PaymentsStripeApiFetchParamCreator = {
      * @summary Pay with a single use token
      * @param request The request to pay an invoice
      */
-    payStripeInvoice(params: {  request?: StripePaymentRequest; }, options: any = {}): FetchArgs {
+    payStripeInvoice(params: {  request?: StripePaymentRequest; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/payment/provider/stripe/payments`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
@@ -36044,6 +36752,20 @@ export const PaymentsStripeApiFetchParamCreator = {
         }
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -36079,8 +36801,8 @@ export const PaymentsStripeApiFp = {
      * @summary Pay with a single use token
      * @param request The request to pay an invoice
      */
-    payStripeInvoice(params: { request?: StripePaymentRequest;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
-        const fetchArgs = PaymentsStripeApiFetchParamCreator.payStripeInvoice(params, options);
+    payStripeInvoice(params: { request?: StripePaymentRequest;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = PaymentsStripeApiFetchParamCreator.payStripeInvoice(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -36111,7 +36833,7 @@ export class PaymentsStripeApi extends BaseAPI {
      * @param request The request to pay an invoice
      */
     payStripeInvoice(params: {  request?: StripePaymentRequest; }, options: any = {}) {
-        return PaymentsStripeApiFp.payStripeInvoice(params, options)(this.fetch, this.basePath);
+        return PaymentsStripeApiFp.payStripeInvoice(params, this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -36133,8 +36855,8 @@ export const PaymentsStripeApiFactory = function (fetch?: FetchAPI, basePath?: s
          * @summary Pay with a single use token
          * @param request The request to pay an invoice
          */
-        payStripeInvoice(params: {  request?: StripePaymentRequest; }, options: any = {}) {
-            return PaymentsStripeApiFp.payStripeInvoice(params, options)(fetch, basePath);
+        payStripeInvoice(params: {  request?: StripePaymentRequest; }, configuration: Configuration, options: any = {}) {
+            return PaymentsStripeApiFp.payStripeInvoice(params, configuration, options)(fetch, basePath);
         },
     };
 };
@@ -39009,7 +39731,7 @@ export const SearchApiFetchParamCreator = {
      * @param size The number of documents returned per page
      * @param page The number of the page returned, starting with 1
      */
-    searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, options: any = {}): FetchArgs {
+    searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "type" is set
         if (params["type"] == null) {
             throw new Error("Missing required parameter type when calling searchIndex");
@@ -39034,6 +39756,20 @@ export const SearchApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -39054,8 +39790,8 @@ export const SearchApiFp = {
      * @param size The number of documents returned per page
      * @param page The number of the page returned, starting with 1
      */
-    searchIndex(params: { type: string; query?: any; size?: number; page?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceMapstringobject> {
-        const fetchArgs = SearchApiFetchParamCreator.searchIndex(params, options);
+    searchIndex(params: { type: string; query?: any; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceMapstringobject> {
+        const fetchArgs = SearchApiFetchParamCreator.searchIndex(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -39081,7 +39817,7 @@ export class SearchApi extends BaseAPI {
      * @param page The number of the page returned, starting with 1
      */
     searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, options: any = {}) {
-        return SearchApiFp.searchIndex(params, options)(this.fetch, this.basePath);
+        return SearchApiFp.searchIndex(params, this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -39098,8 +39834,8 @@ export const SearchApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @param size The number of documents returned per page
          * @param page The number of the page returned, starting with 1
          */
-        searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, options: any = {}) {
-            return SearchApiFp.searchIndex(params, options)(fetch, basePath);
+        searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchIndex(params, configuration, options)(fetch, basePath);
         },
     };
 };
@@ -39592,7 +40328,7 @@ export const StoreApiFetchParamCreator = {
      * @summary Get a single store item
      * @param id The id of the item
      */
-    getStoreItem(params: {  id: number; }, options: any = {}): FetchArgs {
+    getStoreItem(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getStoreItem");
@@ -39605,6 +40341,20 @@ export const StoreApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -39633,7 +40383,7 @@ export const StoreApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getStoreItems(params: {  filterNameSearch?: string; filterUniqueKey?: string; filterPublished?: boolean; filterDisplayable?: boolean; filterStart?: string; filterEnd?: string; filterStartDate?: string; filterStopDate?: string; filterSku?: string; filterPrice?: string; filterTag?: string; filterItemsByType?: string; filterBundledSkus?: string; filterVendor?: number; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getStoreItems(params: {  filterNameSearch?: string; filterUniqueKey?: string; filterPublished?: boolean; filterDisplayable?: boolean; filterStart?: string; filterEnd?: string; filterStartDate?: string; filterStopDate?: string; filterSku?: string; filterPrice?: string; filterTag?: string; filterItemsByType?: string; filterBundledSkus?: string; filterVendor?: number; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/store/items`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -39693,6 +40443,20 @@ export const StoreApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -39964,8 +40728,8 @@ export const StoreApiFp = {
      * @summary Get a single store item
      * @param id The id of the item
      */
-    getStoreItem(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<StoreItem> {
-        const fetchArgs = StoreApiFetchParamCreator.getStoreItem(params, options);
+    getStoreItem(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<StoreItem> {
+        const fetchArgs = StoreApiFetchParamCreator.getStoreItem(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -39997,8 +40761,8 @@ export const StoreApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getStoreItems(params: { filterNameSearch?: string; filterUniqueKey?: string; filterPublished?: boolean; filterDisplayable?: boolean; filterStart?: string; filterEnd?: string; filterStartDate?: string; filterStopDate?: string; filterSku?: string; filterPrice?: string; filterTag?: string; filterItemsByType?: string; filterBundledSkus?: string; filterVendor?: number; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceStoreItem> {
-        const fetchArgs = StoreApiFetchParamCreator.getStoreItems(params, options);
+    getStoreItems(params: { filterNameSearch?: string; filterUniqueKey?: string; filterPublished?: boolean; filterDisplayable?: boolean; filterStart?: string; filterEnd?: string; filterStartDate?: string; filterStopDate?: string; filterSku?: string; filterPrice?: string; filterTag?: string; filterItemsByType?: string; filterBundledSkus?: string; filterVendor?: number; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceStoreItem> {
+        const fetchArgs = StoreApiFetchParamCreator.getStoreItems(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -40134,7 +40898,7 @@ export class StoreApi extends BaseAPI {
      * @param id The id of the item
      */
     getStoreItem(params: {  id: number; }, options: any = {}) {
-        return StoreApiFp.getStoreItem(params, options)(this.fetch, this.basePath);
+        return StoreApiFp.getStoreItem(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * If called without permission STORE_ADMIN the only items marked displayable, whose start and end date are null or appropriate to the current date, and whose geo policy allows the caller's country will be returned. Similarly skus will be filtered, possibly resulting in an item returned with no skus the user can purchase.
@@ -40158,7 +40922,7 @@ export class StoreApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getStoreItems(params: {  filterNameSearch?: string; filterUniqueKey?: string; filterPublished?: boolean; filterDisplayable?: boolean; filterStart?: string; filterEnd?: string; filterStartDate?: string; filterStopDate?: string; filterSku?: string; filterPrice?: string; filterTag?: string; filterItemsByType?: string; filterBundledSkus?: string; filterVendor?: number; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return StoreApiFp.getStoreItems(params, options)(this.fetch, this.basePath);
+        return StoreApiFp.getStoreItems(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Used to create and automatically pay an invoice for a single unit of a single SKU from a user's wallet. SKU must be priced in virtual currency and must not be an item that requires shipping. PAYMENTS_ADMIN permission is required if user ID is specified and is not the ID of the currently logged in user. If invoice price does not match expected price, purchase is aborted
@@ -40258,8 +41022,8 @@ export const StoreApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @summary Get a single store item
          * @param id The id of the item
          */
-        getStoreItem(params: {  id: number; }, options: any = {}) {
-            return StoreApiFp.getStoreItem(params, options)(fetch, basePath);
+        getStoreItem(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return StoreApiFp.getStoreItem(params, configuration, options)(fetch, basePath);
         },
         /**
          * If called without permission STORE_ADMIN the only items marked displayable, whose start and end date are null or appropriate to the current date, and whose geo policy allows the caller's country will be returned. Similarly skus will be filtered, possibly resulting in an item returned with no skus the user can purchase.
@@ -40282,8 +41046,8 @@ export const StoreApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getStoreItems(params: {  filterNameSearch?: string; filterUniqueKey?: string; filterPublished?: boolean; filterDisplayable?: boolean; filterStart?: string; filterEnd?: string; filterStartDate?: string; filterStopDate?: string; filterSku?: string; filterPrice?: string; filterTag?: string; filterItemsByType?: string; filterBundledSkus?: string; filterVendor?: number; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return StoreApiFp.getStoreItems(params, options)(fetch, basePath);
+        getStoreItems(params: {  filterNameSearch?: string; filterUniqueKey?: string; filterPublished?: boolean; filterDisplayable?: boolean; filterStart?: string; filterEnd?: string; filterStartDate?: string; filterStopDate?: string; filterSku?: string; filterPrice?: string; filterTag?: string; filterItemsByType?: string; filterBundledSkus?: string; filterVendor?: number; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return StoreApiFp.getStoreItems(params, configuration, options)(fetch, basePath);
         },
         /**
          * Used to create and automatically pay an invoice for a single unit of a single SKU from a user's wallet. SKU must be priced in virtual currency and must not be an item that requires shipping. PAYMENTS_ADMIN permission is required if user ID is specified and is not the ID of the currently logged in user. If invoice price does not match expected price, purchase is aborted
@@ -40489,7 +41253,7 @@ export const StoreBundlesApiFetchParamCreator = {
      * @summary Get a single bundle item
      * @param id The id of the bundle
      */
-    getBundleItem(params: {  id: number; }, options: any = {}): FetchArgs {
+    getBundleItem(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getBundleItem");
@@ -40503,6 +41267,20 @@ export const StoreBundlesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -40514,7 +41292,7 @@ export const StoreBundlesApiFetchParamCreator = {
      * @summary Get a single bundle template
      * @param id The id of the template
      */
-    getBundleTemplate(params: {  id: string; }, options: any = {}): FetchArgs {
+    getBundleTemplate(params: {  id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getBundleTemplate");
@@ -40527,6 +41305,20 @@ export const StoreBundlesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -40541,7 +41333,7 @@ export const StoreBundlesApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getBundleTemplates(params: {  size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getBundleTemplates(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/store/bundles/templates`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -40559,6 +41351,20 @@ export const StoreBundlesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -40740,8 +41546,8 @@ export const StoreBundlesApiFp = {
      * @summary Get a single bundle item
      * @param id The id of the bundle
      */
-    getBundleItem(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<BundleItem> {
-        const fetchArgs = StoreBundlesApiFetchParamCreator.getBundleItem(params, options);
+    getBundleItem(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<BundleItem> {
+        const fetchArgs = StoreBundlesApiFetchParamCreator.getBundleItem(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -40757,8 +41563,8 @@ export const StoreBundlesApiFp = {
      * @summary Get a single bundle template
      * @param id The id of the template
      */
-    getBundleTemplate(params: { id: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ItemTemplateResource> {
-        const fetchArgs = StoreBundlesApiFetchParamCreator.getBundleTemplate(params, options);
+    getBundleTemplate(params: { id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ItemTemplateResource> {
+        const fetchArgs = StoreBundlesApiFetchParamCreator.getBundleTemplate(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -40776,8 +41582,8 @@ export const StoreBundlesApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getBundleTemplates(params: { size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceItemTemplateResource> {
-        const fetchArgs = StoreBundlesApiFetchParamCreator.getBundleTemplates(params, options);
+    getBundleTemplates(params: { size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceItemTemplateResource> {
+        const fetchArgs = StoreBundlesApiFetchParamCreator.getBundleTemplates(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -40871,7 +41677,7 @@ export class StoreBundlesApi extends BaseAPI {
      * @param id The id of the bundle
      */
     getBundleItem(params: {  id: number; }, options: any = {}) {
-        return StoreBundlesApiFp.getBundleItem(params, options)(this.fetch, this.basePath);
+        return StoreBundlesApiFp.getBundleItem(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Bundle Templates define a type of bundle and the properties they have.
@@ -40879,7 +41685,7 @@ export class StoreBundlesApi extends BaseAPI {
      * @param id The id of the template
      */
     getBundleTemplate(params: {  id: string; }, options: any = {}) {
-        return StoreBundlesApiFp.getBundleTemplate(params, options)(this.fetch, this.basePath);
+        return StoreBundlesApiFp.getBundleTemplate(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -40889,7 +41695,7 @@ export class StoreBundlesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getBundleTemplates(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-        return StoreBundlesApiFp.getBundleTemplates(params, options)(this.fetch, this.basePath);
+        return StoreBundlesApiFp.getBundleTemplates(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -40956,16 +41762,16 @@ export const StoreBundlesApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @summary Get a single bundle item
          * @param id The id of the bundle
          */
-        getBundleItem(params: {  id: number; }, options: any = {}) {
-            return StoreBundlesApiFp.getBundleItem(params, options)(fetch, basePath);
+        getBundleItem(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return StoreBundlesApiFp.getBundleItem(params, configuration, options)(fetch, basePath);
         },
         /**
          * Bundle Templates define a type of bundle and the properties they have.
          * @summary Get a single bundle template
          * @param id The id of the template
          */
-        getBundleTemplate(params: {  id: string; }, options: any = {}) {
-            return StoreBundlesApiFp.getBundleTemplate(params, options)(fetch, basePath);
+        getBundleTemplate(params: {  id: string; }, configuration: Configuration, options: any = {}) {
+            return StoreBundlesApiFp.getBundleTemplate(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -40974,8 +41780,8 @@ export const StoreBundlesApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getBundleTemplates(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-            return StoreBundlesApiFp.getBundleTemplates(params, options)(fetch, basePath);
+        getBundleTemplates(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return StoreBundlesApiFp.getBundleTemplates(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -41212,7 +42018,7 @@ export const StoreCouponsApiFetchParamCreator = {
      * @summary Get a coupon by sku
      * @param sku A sku of the coupon
      */
-    getCouponItemBySku(params: {  sku: string; }, options: any = {}): FetchArgs {
+    getCouponItemBySku(params: {  sku: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "sku" is set
         if (params["sku"] == null) {
             throw new Error("Missing required parameter sku when calling getCouponItemBySku");
@@ -41225,6 +42031,20 @@ export const StoreCouponsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -41508,8 +42328,8 @@ export const StoreCouponsApiFp = {
      * @summary Get a coupon by sku
      * @param sku A sku of the coupon
      */
-    getCouponItemBySku(params: { sku: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CouponItem> {
-        const fetchArgs = StoreCouponsApiFetchParamCreator.getCouponItemBySku(params, options);
+    getCouponItemBySku(params: { sku: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CouponItem> {
+        const fetchArgs = StoreCouponsApiFetchParamCreator.getCouponItemBySku(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -41647,7 +42467,7 @@ export class StoreCouponsApi extends BaseAPI {
      * @param sku A sku of the coupon
      */
     getCouponItemBySku(params: {  sku: string; }, options: any = {}) {
-        return StoreCouponsApiFp.getCouponItemBySku(params, options)(this.fetch, this.basePath);
+        return StoreCouponsApiFp.getCouponItemBySku(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Coupon Templates define a type of coupon and the properties they have.
@@ -41740,8 +42560,8 @@ export const StoreCouponsApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @summary Get a coupon by sku
          * @param sku A sku of the coupon
          */
-        getCouponItemBySku(params: {  sku: string; }, options: any = {}) {
-            return StoreCouponsApiFp.getCouponItemBySku(params, options)(fetch, basePath);
+        getCouponItemBySku(params: {  sku: string; }, configuration: Configuration, options: any = {}) {
+            return StoreCouponsApiFp.getCouponItemBySku(params, configuration, options)(fetch, basePath);
         },
         /**
          * Coupon Templates define a type of coupon and the properties they have.
@@ -42364,7 +43184,7 @@ export const StoreShippingApiFetchParamCreator = {
      * @summary Get a single shipping item
      * @param id The id of the shipping item
      */
-    getShippingItem(params: {  id: number; }, options: any = {}): FetchArgs {
+    getShippingItem(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getShippingItem");
@@ -42377,6 +43197,20 @@ export const StoreShippingApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -42643,8 +43477,8 @@ export const StoreShippingApiFp = {
      * @summary Get a single shipping item
      * @param id The id of the shipping item
      */
-    getShippingItem(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ShippingItem> {
-        const fetchArgs = StoreShippingApiFetchParamCreator.getShippingItem(params, options);
+    getShippingItem(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<ShippingItem> {
+        const fetchArgs = StoreShippingApiFetchParamCreator.getShippingItem(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -42774,7 +43608,7 @@ export class StoreShippingApi extends BaseAPI {
      * @param id The id of the shipping item
      */
     getShippingItem(params: {  id: number; }, options: any = {}) {
-        return StoreShippingApiFp.getShippingItem(params, options)(this.fetch, this.basePath);
+        return StoreShippingApiFp.getShippingItem(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Shipping Templates define a type of shipping and the properties they have.
@@ -42859,8 +43693,8 @@ export const StoreShippingApiFactory = function (fetch?: FetchAPI, basePath?: st
          * @summary Get a single shipping item
          * @param id The id of the shipping item
          */
-        getShippingItem(params: {  id: number; }, options: any = {}) {
-            return StoreShippingApiFp.getShippingItem(params, options)(fetch, basePath);
+        getShippingItem(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return StoreShippingApiFp.getShippingItem(params, configuration, options)(fetch, basePath);
         },
         /**
          * Shipping Templates define a type of shipping and the properties they have.
@@ -43045,7 +43879,7 @@ export const StoreShoppingCartsApiFetchParamCreator = {
      * @param owner Set the owner of a cart. If not specified, defaults to the calling user&#39;s id. If specified and is not the calling user&#39;s id, SHOPPING_CARTS_ADMIN permission is required
      * @param currencyCode Set the currency for the cart, by currency code. May be disallowed by site settings.
      */
-    createCart(params: {  owner?: number; currencyCode?: string; }, options: any = {}): FetchArgs {
+    createCart(params: {  owner?: number; currencyCode?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/carts`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -43060,6 +43894,20 @@ export const StoreShoppingCartsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -43521,8 +44369,8 @@ export const StoreShoppingCartsApiFp = {
      * @param owner Set the owner of a cart. If not specified, defaults to the calling user&#39;s id. If specified and is not the calling user&#39;s id, SHOPPING_CARTS_ADMIN permission is required
      * @param currencyCode Set the currency for the cart, by currency code. May be disallowed by site settings.
      */
-    createCart(params: { owner?: number; currencyCode?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<string> {
-        const fetchArgs = StoreShoppingCartsApiFetchParamCreator.createCart(params, options);
+    createCart(params: { owner?: number; currencyCode?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<string> {
+        const fetchArgs = StoreShoppingCartsApiFetchParamCreator.createCart(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -43734,7 +44582,7 @@ export class StoreShoppingCartsApi extends BaseAPI {
      * @param currencyCode Set the currency for the cart, by currency code. May be disallowed by site settings.
      */
     createCart(params: {  owner?: number; currencyCode?: string; }, options: any = {}) {
-        return StoreShoppingCartsApiFp.createCart(params, options)(this.fetch, this.basePath);
+        return StoreShoppingCartsApiFp.createCart(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -43856,8 +44704,8 @@ export const StoreShoppingCartsApiFactory = function (fetch?: FetchAPI, basePath
          * @param owner Set the owner of a cart. If not specified, defaults to the calling user&#39;s id. If specified and is not the calling user&#39;s id, SHOPPING_CARTS_ADMIN permission is required
          * @param currencyCode Set the currency for the cart, by currency code. May be disallowed by site settings.
          */
-        createCart(params: {  owner?: number; currencyCode?: string; }, options: any = {}) {
-            return StoreShoppingCartsApiFp.createCart(params, options)(fetch, basePath);
+        createCart(params: {  owner?: number; currencyCode?: string; }, configuration: Configuration, options: any = {}) {
+            return StoreShoppingCartsApiFp.createCart(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -44117,7 +44965,7 @@ export const StoreSubscriptionsApiFetchParamCreator = {
      * @summary Retrieve a single subscription item and associated plans
      * @param id The id of the subscription
      */
-    getSubscription(params: {  id: number; }, options: any = {}): FetchArgs {
+    getSubscription(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getSubscription");
@@ -44130,6 +44978,20 @@ export const StoreSubscriptionsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -44229,7 +45091,7 @@ export const StoreSubscriptionsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getSubscriptions(params: {  size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getSubscriptions(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/subscriptions`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -44247,6 +45109,20 @@ export const StoreSubscriptionsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -44456,8 +45332,8 @@ export const StoreSubscriptionsApiFp = {
      * @summary Retrieve a single subscription item and associated plans
      * @param id The id of the subscription
      */
-    getSubscription(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<SubscriptionResource> {
-        const fetchArgs = StoreSubscriptionsApiFetchParamCreator.getSubscription(params, options);
+    getSubscription(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<SubscriptionResource> {
+        const fetchArgs = StoreSubscriptionsApiFetchParamCreator.getSubscription(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -44511,8 +45387,8 @@ export const StoreSubscriptionsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getSubscriptions(params: { size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceSubscriptionResource> {
-        const fetchArgs = StoreSubscriptionsApiFetchParamCreator.getSubscriptions(params, options);
+    getSubscriptions(params: { size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceSubscriptionResource> {
+        const fetchArgs = StoreSubscriptionsApiFetchParamCreator.getSubscriptions(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -44621,7 +45497,7 @@ export class StoreSubscriptionsApi extends BaseAPI {
      * @param id The id of the subscription
      */
     getSubscription(params: {  id: number; }, options: any = {}) {
-        return StoreSubscriptionsApiFp.getSubscription(params, options)(this.fetch, this.basePath);
+        return StoreSubscriptionsApiFp.getSubscription(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Subscription Templates define a type of subscription and the properties they have.
@@ -44649,7 +45525,7 @@ export class StoreSubscriptionsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getSubscriptions(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-        return StoreSubscriptionsApiFp.getSubscriptions(params, options)(this.fetch, this.basePath);
+        return StoreSubscriptionsApiFp.getSubscriptions(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -44722,8 +45598,8 @@ export const StoreSubscriptionsApiFactory = function (fetch?: FetchAPI, basePath
          * @summary Retrieve a single subscription item and associated plans
          * @param id The id of the subscription
          */
-        getSubscription(params: {  id: number; }, options: any = {}) {
-            return StoreSubscriptionsApiFp.getSubscription(params, options)(fetch, basePath);
+        getSubscription(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return StoreSubscriptionsApiFp.getSubscription(params, configuration, options)(fetch, basePath);
         },
         /**
          * Subscription Templates define a type of subscription and the properties they have.
@@ -44750,8 +45626,8 @@ export const StoreSubscriptionsApiFactory = function (fetch?: FetchAPI, basePath
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getSubscriptions(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-            return StoreSubscriptionsApiFp.getSubscriptions(params, options)(fetch, basePath);
+        getSubscriptions(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return StoreSubscriptionsApiFp.getSubscriptions(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -44950,7 +45826,7 @@ export const StoreVendorsApiFetchParamCreator = {
      * @summary Get a single vendor
      * @param id The id of the vendor
      */
-    getVendor(params: {  id: number; }, options: any = {}): FetchArgs {
+    getVendor(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getVendor");
@@ -44963,6 +45839,20 @@ export const StoreVendorsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -45063,7 +45953,7 @@ export const StoreVendorsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getVendors(params: {  filterName?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getVendors(params: {  filterName?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/vendors`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -45084,6 +45974,20 @@ export const StoreVendorsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -45259,8 +46163,8 @@ export const StoreVendorsApiFp = {
      * @summary Get a single vendor
      * @param id The id of the vendor
      */
-    getVendor(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<VendorResource> {
-        const fetchArgs = StoreVendorsApiFetchParamCreator.getVendor(params, options);
+    getVendor(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<VendorResource> {
+        const fetchArgs = StoreVendorsApiFetchParamCreator.getVendor(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -45315,8 +46219,8 @@ export const StoreVendorsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getVendors(params: { filterName?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceVendorResource> {
-        const fetchArgs = StoreVendorsApiFetchParamCreator.getVendors(params, options);
+    getVendors(params: { filterName?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceVendorResource> {
+        const fetchArgs = StoreVendorsApiFetchParamCreator.getVendors(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -45408,7 +46312,7 @@ export class StoreVendorsApi extends BaseAPI {
      * @param id The id of the vendor
      */
     getVendor(params: {  id: number; }, options: any = {}) {
-        return StoreVendorsApiFp.getVendor(params, options)(this.fetch, this.basePath);
+        return StoreVendorsApiFp.getVendor(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Vendor Templates define a type of vendor and the properties they have.
@@ -45437,7 +46341,7 @@ export class StoreVendorsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getVendors(params: {  filterName?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return StoreVendorsApiFp.getVendors(params, options)(this.fetch, this.basePath);
+        return StoreVendorsApiFp.getVendors(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -45502,8 +46406,8 @@ export const StoreVendorsApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @summary Get a single vendor
          * @param id The id of the vendor
          */
-        getVendor(params: {  id: number; }, options: any = {}) {
-            return StoreVendorsApiFp.getVendor(params, options)(fetch, basePath);
+        getVendor(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return StoreVendorsApiFp.getVendor(params, configuration, options)(fetch, basePath);
         },
         /**
          * Vendor Templates define a type of vendor and the properties they have.
@@ -45531,8 +46435,8 @@ export const StoreVendorsApiFactory = function (fetch?: FetchAPI, basePath?: str
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getVendors(params: {  filterName?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return StoreVendorsApiFp.getVendors(params, options)(fetch, basePath);
+        getVendors(params: {  filterName?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return StoreVendorsApiFp.getVendors(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -45731,7 +46635,7 @@ export const TaxesApiFetchParamCreator = {
      * @summary Get a single tax
      * @param countryCodeIso3 The iso3 code of the country
      */
-    getCountryTax(params: {  countryCodeIso3: string; }, options: any = {}): FetchArgs {
+    getCountryTax(params: {  countryCodeIso3: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "countryCodeIso3" is set
         if (params["countryCodeIso3"] == null) {
             throw new Error("Missing required parameter countryCodeIso3 when calling getCountryTax");
@@ -45744,6 +46648,20 @@ export const TaxesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -45758,7 +46676,7 @@ export const TaxesApiFetchParamCreator = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCountryTaxes(params: {  size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getCountryTaxes(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/tax/countries`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -45777,6 +46695,20 @@ export const TaxesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -45789,7 +46721,7 @@ export const TaxesApiFetchParamCreator = {
      * @param countryCodeIso3 The iso3 code of the country
      * @param stateCode The code of the state
      */
-    getStateTax(params: {  countryCodeIso3: string; stateCode: string; }, options: any = {}): FetchArgs {
+    getStateTax(params: {  countryCodeIso3: string; stateCode: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "countryCodeIso3" is set
         if (params["countryCodeIso3"] == null) {
             throw new Error("Missing required parameter countryCodeIso3 when calling getStateTax");
@@ -45808,6 +46740,20 @@ export const TaxesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -45821,7 +46767,7 @@ export const TaxesApiFetchParamCreator = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getStateTaxesForCountries(params: {  size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getStateTaxesForCountries(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/tax/states`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -45840,6 +46786,20 @@ export const TaxesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -45854,7 +46814,7 @@ export const TaxesApiFetchParamCreator = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getStateTaxesForCountry(params: {  countryCodeIso3: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getStateTaxesForCountry(params: {  countryCodeIso3: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "countryCodeIso3" is set
         if (params["countryCodeIso3"] == null) {
             throw new Error("Missing required parameter countryCodeIso3 when calling getStateTaxesForCountry");
@@ -45877,6 +46837,20 @@ export const TaxesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -46059,8 +47033,8 @@ export const TaxesApiFp = {
      * @summary Get a single tax
      * @param countryCodeIso3 The iso3 code of the country
      */
-    getCountryTax(params: { countryCodeIso3: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CountryTaxResource> {
-        const fetchArgs = TaxesApiFetchParamCreator.getCountryTax(params, options);
+    getCountryTax(params: { countryCodeIso3: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<CountryTaxResource> {
+        const fetchArgs = TaxesApiFetchParamCreator.getCountryTax(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -46078,8 +47052,8 @@ export const TaxesApiFp = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCountryTaxes(params: { size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCountryTaxResource> {
-        const fetchArgs = TaxesApiFetchParamCreator.getCountryTaxes(params, options);
+    getCountryTaxes(params: { size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCountryTaxResource> {
+        const fetchArgs = TaxesApiFetchParamCreator.getCountryTaxes(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -46096,8 +47070,8 @@ export const TaxesApiFp = {
      * @param countryCodeIso3 The iso3 code of the country
      * @param stateCode The code of the state
      */
-    getStateTax(params: { countryCodeIso3: string; stateCode: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<StateTaxResource> {
-        const fetchArgs = TaxesApiFetchParamCreator.getStateTax(params, options);
+    getStateTax(params: { countryCodeIso3: string; stateCode: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<StateTaxResource> {
+        const fetchArgs = TaxesApiFetchParamCreator.getStateTax(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -46115,8 +47089,8 @@ export const TaxesApiFp = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getStateTaxesForCountries(params: { size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceStateTaxResource> {
-        const fetchArgs = TaxesApiFetchParamCreator.getStateTaxesForCountries(params, options);
+    getStateTaxesForCountries(params: { size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceStateTaxResource> {
+        const fetchArgs = TaxesApiFetchParamCreator.getStateTaxesForCountries(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -46135,8 +47109,8 @@ export const TaxesApiFp = {
      * @param page The number of the page returned
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getStateTaxesForCountry(params: { countryCodeIso3: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceStateTaxResource> {
-        const fetchArgs = TaxesApiFetchParamCreator.getStateTaxesForCountry(params, options);
+    getStateTaxesForCountry(params: { countryCodeIso3: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceStateTaxResource> {
+        const fetchArgs = TaxesApiFetchParamCreator.getStateTaxesForCountry(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -46230,7 +47204,7 @@ export class TaxesApi extends BaseAPI {
      * @param countryCodeIso3 The iso3 code of the country
      */
     getCountryTax(params: {  countryCodeIso3: string; }, options: any = {}) {
-        return TaxesApiFp.getCountryTax(params, options)(this.fetch, this.basePath);
+        return TaxesApiFp.getCountryTax(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Get a list of taxes
@@ -46240,7 +47214,7 @@ export class TaxesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getCountryTaxes(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-        return TaxesApiFp.getCountryTaxes(params, options)(this.fetch, this.basePath);
+        return TaxesApiFp.getCountryTaxes(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -46249,7 +47223,7 @@ export class TaxesApi extends BaseAPI {
      * @param stateCode The code of the state
      */
     getStateTax(params: {  countryCodeIso3: string; stateCode: string; }, options: any = {}) {
-        return TaxesApiFp.getStateTax(params, options)(this.fetch, this.basePath);
+        return TaxesApiFp.getStateTax(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Get a list of taxes
@@ -46259,7 +47233,7 @@ export class TaxesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getStateTaxesForCountries(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-        return TaxesApiFp.getStateTaxesForCountries(params, options)(this.fetch, this.basePath);
+        return TaxesApiFp.getStateTaxesForCountries(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Get a list of taxes
@@ -46270,7 +47244,7 @@ export class TaxesApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getStateTaxesForCountry(params: {  countryCodeIso3: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return TaxesApiFp.getStateTaxesForCountry(params, options)(this.fetch, this.basePath);
+        return TaxesApiFp.getStateTaxesForCountry(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -46337,8 +47311,8 @@ export const TaxesApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @summary Get a single tax
          * @param countryCodeIso3 The iso3 code of the country
          */
-        getCountryTax(params: {  countryCodeIso3: string; }, options: any = {}) {
-            return TaxesApiFp.getCountryTax(params, options)(fetch, basePath);
+        getCountryTax(params: {  countryCodeIso3: string; }, configuration: Configuration, options: any = {}) {
+            return TaxesApiFp.getCountryTax(params, configuration, options)(fetch, basePath);
         },
         /**
          * Get a list of taxes
@@ -46347,8 +47321,8 @@ export const TaxesApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @param page The number of the page returned
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getCountryTaxes(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-            return TaxesApiFp.getCountryTaxes(params, options)(fetch, basePath);
+        getCountryTaxes(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return TaxesApiFp.getCountryTaxes(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -46356,8 +47330,8 @@ export const TaxesApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @param countryCodeIso3 The iso3 code of the country
          * @param stateCode The code of the state
          */
-        getStateTax(params: {  countryCodeIso3: string; stateCode: string; }, options: any = {}) {
-            return TaxesApiFp.getStateTax(params, options)(fetch, basePath);
+        getStateTax(params: {  countryCodeIso3: string; stateCode: string; }, configuration: Configuration, options: any = {}) {
+            return TaxesApiFp.getStateTax(params, configuration, options)(fetch, basePath);
         },
         /**
          * Get a list of taxes
@@ -46366,8 +47340,8 @@ export const TaxesApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @param page The number of the page returned
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getStateTaxesForCountries(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
-            return TaxesApiFp.getStateTaxesForCountries(params, options)(fetch, basePath);
+        getStateTaxesForCountries(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return TaxesApiFp.getStateTaxesForCountries(params, configuration, options)(fetch, basePath);
         },
         /**
          * Get a list of taxes
@@ -46377,8 +47351,8 @@ export const TaxesApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @param page The number of the page returned
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getStateTaxesForCountry(params: {  countryCodeIso3: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return TaxesApiFp.getStateTaxesForCountry(params, options)(fetch, basePath);
+        getStateTaxesForCountry(params: {  countryCodeIso3: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return TaxesApiFp.getStateTaxesForCountry(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -46412,7 +47386,7 @@ export const TemplatesPropertiesApiFetchParamCreator = {
      * @summary Get details for a template property type
      * @param type type
      */
-    getTemplatePropertyType(params: {  type: string; }, options: any = {}): FetchArgs {
+    getTemplatePropertyType(params: {  type: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "type" is set
         if (params["type"] == null) {
             throw new Error("Missing required parameter type when calling getTemplatePropertyType");
@@ -46426,6 +47400,20 @@ export const TemplatesPropertiesApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -46436,7 +47424,7 @@ export const TemplatesPropertiesApiFetchParamCreator = {
      * 
      * @summary List template property types
      */
-    getTemplatePropertyTypes(options: any = {}): FetchArgs {
+    getTemplatePropertyTypes(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/templates/properties`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -46444,6 +47432,20 @@ export const TemplatesPropertiesApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -46462,8 +47464,8 @@ export const TemplatesPropertiesApiFp = {
      * @summary Get details for a template property type
      * @param type type
      */
-    getTemplatePropertyType(params: { type: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PropertyFieldListResource> {
-        const fetchArgs = TemplatesPropertiesApiFetchParamCreator.getTemplatePropertyType(params, options);
+    getTemplatePropertyType(params: { type: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PropertyFieldListResource> {
+        const fetchArgs = TemplatesPropertiesApiFetchParamCreator.getTemplatePropertyType(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -46478,8 +47480,8 @@ export const TemplatesPropertiesApiFp = {
      * 
      * @summary List template property types
      */
-    getTemplatePropertyTypes(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<PropertyFieldListResource>> {
-        const fetchArgs = TemplatesPropertiesApiFetchParamCreator.getTemplatePropertyTypes(options);
+    getTemplatePropertyTypes(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<PropertyFieldListResource>> {
+        const fetchArgs = TemplatesPropertiesApiFetchParamCreator.getTemplatePropertyTypes(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -46502,14 +47504,14 @@ export class TemplatesPropertiesApi extends BaseAPI {
      * @param type type
      */
     getTemplatePropertyType(params: {  type: string; }, options: any = {}) {
-        return TemplatesPropertiesApiFp.getTemplatePropertyType(params, options)(this.fetch, this.basePath);
+        return TemplatesPropertiesApiFp.getTemplatePropertyType(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
      * @summary List template property types
      */
     getTemplatePropertyTypes(options: any = {}) {
-        return TemplatesPropertiesApiFp.getTemplatePropertyTypes(options)(this.fetch, this.basePath);
+        return TemplatesPropertiesApiFp.getTemplatePropertyTypes(this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -46523,15 +47525,15 @@ export const TemplatesPropertiesApiFactory = function (fetch?: FetchAPI, basePat
          * @summary Get details for a template property type
          * @param type type
          */
-        getTemplatePropertyType(params: {  type: string; }, options: any = {}) {
-            return TemplatesPropertiesApiFp.getTemplatePropertyType(params, options)(fetch, basePath);
+        getTemplatePropertyType(params: {  type: string; }, configuration: Configuration, options: any = {}) {
+            return TemplatesPropertiesApiFp.getTemplatePropertyType(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
          * @summary List template property types
          */
-        getTemplatePropertyTypes(options: any = {}) {
-            return TemplatesPropertiesApiFp.getTemplatePropertyTypes(options)(fetch, basePath);
+        getTemplatePropertyTypes(configuration: Configuration, options: any = {}) {
+            return TemplatesPropertiesApiFp.getTemplatePropertyTypes(configuration, options)(fetch, basePath);
         },
     };
 };
@@ -46676,7 +47678,7 @@ export const UsersApiFetchParamCreator = {
      * @summary Get a single user
      * @param id The id of the user or &#39;me&#39;
      */
-    getUser(params: {  id: string; }, options: any = {}): FetchArgs {
+    getUser(params: {  id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling getUser");
@@ -46689,6 +47691,20 @@ export const UsersApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -46839,7 +47855,7 @@ export const UsersApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getUsers(params: {  filterDisplayname?: string; filterEmail?: string; filterFirstname?: string; filterFullname?: string; filterLastname?: string; filterUsername?: string; filterTag?: string; filterGroup?: string; filterRole?: string; filterLastActivity?: string; filterIdList?: string; filterSearch?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getUsers(params: {  filterDisplayname?: string; filterEmail?: string; filterFirstname?: string; filterFullname?: string; filterLastname?: string; filterUsername?: string; filterTag?: string; filterGroup?: string; filterRole?: string; filterLastActivity?: string; filterIdList?: string; filterSearch?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/users`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -46894,6 +47910,20 @@ export const UsersApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -46906,7 +47936,7 @@ export const UsersApiFetchParamCreator = {
      * @param id The id of the user
      * @param newPasswordRequest The new password request object
      */
-    passwordReset(params: {  id: number; newPasswordRequest?: NewPasswordRequest; }, options: any = {}): FetchArgs {
+    passwordReset(params: {  id: number; newPasswordRequest?: NewPasswordRequest; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling passwordReset");
@@ -46924,6 +47954,20 @@ export const UsersApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -46935,7 +47979,7 @@ export const UsersApiFetchParamCreator = {
      * @summary Register a new user
      * @param userResource The user resource object
      */
-    registerUser(params: {  userResource?: UserResource; }, options: any = {}): FetchArgs {
+    registerUser(params: {  userResource?: UserResource; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/users`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
@@ -46947,6 +47991,20 @@ export const UsersApiFetchParamCreator = {
         }
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -47048,7 +48106,7 @@ export const UsersApiFetchParamCreator = {
      * @summary Reset a user's password
      * @param id The id of the user
      */
-    startPasswordReset(params: {  id: number; }, options: any = {}): FetchArgs {
+    startPasswordReset(params: {  id: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "id" is set
         if (params["id"] == null) {
             throw new Error("Missing required parameter id when calling startPasswordReset");
@@ -47062,6 +48120,20 @@ export const UsersApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -47073,7 +48145,7 @@ export const UsersApiFetchParamCreator = {
      * @summary Reset a user's password without user id
      * @param passwordReset An object containing one of three methods to look up a user
      */
-    submitPasswordReset(params: {  passwordReset?: PasswordResetRequest; }, options: any = {}): FetchArgs {
+    submitPasswordReset(params: {  passwordReset?: PasswordResetRequest; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/users/password-reset`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
@@ -47085,6 +48157,20 @@ export const UsersApiFetchParamCreator = {
         }
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -47244,8 +48330,8 @@ export const UsersApiFp = {
      * @summary Get a single user
      * @param id The id of the user or &#39;me&#39;
      */
-    getUser(params: { id: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<UserResource> {
-        const fetchArgs = UsersApiFetchParamCreator.getUser(params, options);
+    getUser(params: { id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<UserResource> {
+        const fetchArgs = UsersApiFetchParamCreator.getUser(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -47328,8 +48414,8 @@ export const UsersApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getUsers(params: { filterDisplayname?: string; filterEmail?: string; filterFirstname?: string; filterFullname?: string; filterLastname?: string; filterUsername?: string; filterTag?: string; filterGroup?: string; filterRole?: string; filterLastActivity?: string; filterIdList?: string; filterSearch?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceUserBaseResource> {
-        const fetchArgs = UsersApiFetchParamCreator.getUsers(params, options);
+    getUsers(params: { filterDisplayname?: string; filterEmail?: string; filterFirstname?: string; filterFullname?: string; filterLastname?: string; filterUsername?: string; filterTag?: string; filterGroup?: string; filterRole?: string; filterLastActivity?: string; filterIdList?: string; filterSearch?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceUserBaseResource> {
+        const fetchArgs = UsersApiFetchParamCreator.getUsers(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -47346,8 +48432,8 @@ export const UsersApiFp = {
      * @param id The id of the user
      * @param newPasswordRequest The new password request object
      */
-    passwordReset(params: { id: number; newPasswordRequest?: NewPasswordRequest;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
-        const fetchArgs = UsersApiFetchParamCreator.passwordReset(params, options);
+    passwordReset(params: { id: number; newPasswordRequest?: NewPasswordRequest;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = UsersApiFetchParamCreator.passwordReset(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -47363,8 +48449,8 @@ export const UsersApiFp = {
      * @summary Register a new user
      * @param userResource The user resource object
      */
-    registerUser(params: { userResource?: UserResource;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<UserResource> {
-        const fetchArgs = UsersApiFetchParamCreator.registerUser(params, options);
+    registerUser(params: { userResource?: UserResource;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<UserResource> {
+        const fetchArgs = UsersApiFetchParamCreator.registerUser(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -47416,8 +48502,8 @@ export const UsersApiFp = {
      * @summary Reset a user's password
      * @param id The id of the user
      */
-    startPasswordReset(params: { id: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
-        const fetchArgs = UsersApiFetchParamCreator.startPasswordReset(params, options);
+    startPasswordReset(params: { id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = UsersApiFetchParamCreator.startPasswordReset(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -47433,8 +48519,8 @@ export const UsersApiFp = {
      * @summary Reset a user's password without user id
      * @param passwordReset An object containing one of three methods to look up a user
      */
-    submitPasswordReset(params: { passwordReset?: PasswordResetRequest;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
-        const fetchArgs = UsersApiFetchParamCreator.submitPasswordReset(params, options);
+    submitPasswordReset(params: { passwordReset?: PasswordResetRequest;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = UsersApiFetchParamCreator.submitPasswordReset(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -47519,7 +48605,7 @@ export class UsersApi extends BaseAPI {
      * @param id The id of the user or &#39;me&#39;
      */
     getUser(params: {  id: string; }, options: any = {}) {
-        return UsersApiFp.getUser(params, options)(this.fetch, this.basePath);
+        return UsersApiFp.getUser(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -47567,7 +48653,7 @@ export class UsersApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getUsers(params: {  filterDisplayname?: string; filterEmail?: string; filterFirstname?: string; filterFullname?: string; filterLastname?: string; filterUsername?: string; filterTag?: string; filterGroup?: string; filterRole?: string; filterLastActivity?: string; filterIdList?: string; filterSearch?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return UsersApiFp.getUsers(params, options)(this.fetch, this.basePath);
+        return UsersApiFp.getUsers(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Finish resetting a user's password using the secret provided from the password-reset endpoint.  Password should be in plain text and will be encrypted on receipt. Use SSL for security.
@@ -47576,7 +48662,7 @@ export class UsersApi extends BaseAPI {
      * @param newPasswordRequest The new password request object
      */
     passwordReset(params: {  id: number; newPasswordRequest?: NewPasswordRequest; }, options: any = {}) {
-        return UsersApiFp.passwordReset(params, options)(this.fetch, this.basePath);
+        return UsersApiFp.passwordReset(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Password should be in plain text and will be encrypted on receipt. Use SSL for security
@@ -47584,7 +48670,7 @@ export class UsersApi extends BaseAPI {
      * @param userResource The user resource object
      */
     registerUser(params: {  userResource?: UserResource; }, options: any = {}) {
-        return UsersApiFp.registerUser(params, options)(this.fetch, this.basePath);
+        return UsersApiFp.registerUser(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -47610,7 +48696,7 @@ export class UsersApi extends BaseAPI {
      * @param id The id of the user
      */
     startPasswordReset(params: {  id: number; }, options: any = {}) {
-        return UsersApiFp.startPasswordReset(params, options)(this.fetch, this.basePath);
+        return UsersApiFp.startPasswordReset(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * A reset code will be generated and a 'forgot_password' BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit.  Must submit their email, username, or mobile phone number
@@ -47618,7 +48704,7 @@ export class UsersApi extends BaseAPI {
      * @param passwordReset An object containing one of three methods to look up a user
      */
     submitPasswordReset(params: {  passwordReset?: PasswordResetRequest; }, options: any = {}) {
-        return UsersApiFp.submitPasswordReset(params, options)(this.fetch, this.basePath);
+        return UsersApiFp.submitPasswordReset(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Password will not be edited on this endpoint, use password specific endpoints.
@@ -47676,8 +48762,8 @@ export const UsersApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @summary Get a single user
          * @param id The id of the user or &#39;me&#39;
          */
-        getUser(params: {  id: string; }, options: any = {}) {
-            return UsersApiFp.getUser(params, options)(fetch, basePath);
+        getUser(params: {  id: string; }, configuration: Configuration, options: any = {}) {
+            return UsersApiFp.getUser(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -47724,8 +48810,8 @@ export const UsersApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getUsers(params: {  filterDisplayname?: string; filterEmail?: string; filterFirstname?: string; filterFullname?: string; filterLastname?: string; filterUsername?: string; filterTag?: string; filterGroup?: string; filterRole?: string; filterLastActivity?: string; filterIdList?: string; filterSearch?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return UsersApiFp.getUsers(params, options)(fetch, basePath);
+        getUsers(params: {  filterDisplayname?: string; filterEmail?: string; filterFirstname?: string; filterFullname?: string; filterLastname?: string; filterUsername?: string; filterTag?: string; filterGroup?: string; filterRole?: string; filterLastActivity?: string; filterIdList?: string; filterSearch?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return UsersApiFp.getUsers(params, configuration, options)(fetch, basePath);
         },
         /**
          * Finish resetting a user's password using the secret provided from the password-reset endpoint.  Password should be in plain text and will be encrypted on receipt. Use SSL for security.
@@ -47733,16 +48819,16 @@ export const UsersApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @param id The id of the user
          * @param newPasswordRequest The new password request object
          */
-        passwordReset(params: {  id: number; newPasswordRequest?: NewPasswordRequest; }, options: any = {}) {
-            return UsersApiFp.passwordReset(params, options)(fetch, basePath);
+        passwordReset(params: {  id: number; newPasswordRequest?: NewPasswordRequest; }, configuration: Configuration, options: any = {}) {
+            return UsersApiFp.passwordReset(params, configuration, options)(fetch, basePath);
         },
         /**
          * Password should be in plain text and will be encrypted on receipt. Use SSL for security
          * @summary Register a new user
          * @param userResource The user resource object
          */
-        registerUser(params: {  userResource?: UserResource; }, options: any = {}) {
-            return UsersApiFp.registerUser(params, options)(fetch, basePath);
+        registerUser(params: {  userResource?: UserResource; }, configuration: Configuration, options: any = {}) {
+            return UsersApiFp.registerUser(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -47767,16 +48853,16 @@ export const UsersApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          * @summary Reset a user's password
          * @param id The id of the user
          */
-        startPasswordReset(params: {  id: number; }, options: any = {}) {
-            return UsersApiFp.startPasswordReset(params, options)(fetch, basePath);
+        startPasswordReset(params: {  id: number; }, configuration: Configuration, options: any = {}) {
+            return UsersApiFp.startPasswordReset(params, configuration, options)(fetch, basePath);
         },
         /**
          * A reset code will be generated and a 'forgot_password' BRE event will be fired with that code.  The default system rule will send an email to the selected user if an email service has been setup. You can modify that rule in BRE to send an SMS instead or any other type of notification as you see fit.  Must submit their email, username, or mobile phone number
          * @summary Reset a user's password without user id
          * @param passwordReset An object containing one of three methods to look up a user
          */
-        submitPasswordReset(params: {  passwordReset?: PasswordResetRequest; }, options: any = {}) {
-            return UsersApiFp.submitPasswordReset(params, options)(fetch, basePath);
+        submitPasswordReset(params: {  passwordReset?: PasswordResetRequest; }, configuration: Configuration, options: any = {}) {
+            return UsersApiFp.submitPasswordReset(params, configuration, options)(fetch, basePath);
         },
         /**
          * Password will not be edited on this endpoint, use password specific endpoints.
@@ -49127,7 +50213,7 @@ export const UsersGroupsApiFetchParamCreator = {
      * @summary Loads a specific group's details
      * @param uniqueName The group unique name
      */
-    getGroup(params: {  uniqueName: string; }, options: any = {}): FetchArgs {
+    getGroup(params: {  uniqueName: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "uniqueName" is set
         if (params["uniqueName"] == null) {
             throw new Error("Missing required parameter uniqueName when calling getGroup");
@@ -49141,6 +50227,20 @@ export const UsersGroupsApiFetchParamCreator = {
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
 
         return {
             url: url.format(urlObj),
@@ -49153,7 +50253,7 @@ export const UsersGroupsApiFetchParamCreator = {
      * @param uniqueName The group unique name
      * @param userId The id of the user
      */
-    getGroupMember(params: {  uniqueName: string; userId: number; }, options: any = {}): FetchArgs {
+    getGroupMember(params: {  uniqueName: string; userId: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "uniqueName" is set
         if (params["uniqueName"] == null) {
             throw new Error("Missing required parameter uniqueName when calling getGroupMember");
@@ -49171,6 +50271,20 @@ export const UsersGroupsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -49271,7 +50385,7 @@ export const UsersGroupsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getGroupMembers(params: {  uniqueName: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getGroupMembers(params: {  uniqueName: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "uniqueName" is set
         if (params["uniqueName"] == null) {
             throw new Error("Missing required parameter uniqueName when calling getGroupMembers");
@@ -49294,6 +50408,20 @@ export const UsersGroupsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -49392,7 +50520,7 @@ export const UsersGroupsApiFetchParamCreator = {
      * @param userId The id of the user
      * @param filterChildren Whether to limit group list to children of groups only. If true, shows only groups with parents. If false, shows only groups with no parent.
      */
-    getGroupsForUser(params: {  userId: number; filterChildren?: boolean; }, options: any = {}): FetchArgs {
+    getGroupsForUser(params: {  userId: number; filterChildren?: boolean; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "userId" is set
         if (params["userId"] == null) {
             throw new Error("Missing required parameter userId when calling getGroupsForUser");
@@ -49409,6 +50537,20 @@ export const UsersGroupsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -49429,7 +50571,7 @@ export const UsersGroupsApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    listGroups(params: {  filterTemplate?: string; filterMemberCount?: string; filterName?: string; filterUniqueName?: string; filterParent?: string; filterStatus?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    listGroups(params: {  filterTemplate?: string; filterMemberCount?: string; filterName?: string; filterUniqueName?: string; filterParent?: string; filterStatus?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/users/groups`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -49465,6 +50607,20 @@ export const UsersGroupsApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -49962,8 +51118,8 @@ export const UsersGroupsApiFp = {
      * @summary Loads a specific group's details
      * @param uniqueName The group unique name
      */
-    getGroup(params: { uniqueName: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<GroupResource> {
-        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroup(params, options);
+    getGroup(params: { uniqueName: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<GroupResource> {
+        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroup(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -49980,8 +51136,8 @@ export const UsersGroupsApiFp = {
      * @param uniqueName The group unique name
      * @param userId The id of the user
      */
-    getGroupMember(params: { uniqueName: string; userId: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<GroupMemberResource> {
-        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroupMember(params, options);
+    getGroupMember(params: { uniqueName: string; userId: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<GroupMemberResource> {
+        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroupMember(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -50036,8 +51192,8 @@ export const UsersGroupsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getGroupMembers(params: { uniqueName: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceGroupMemberResource> {
-        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroupMembers(params, options);
+    getGroupMembers(params: { uniqueName: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceGroupMemberResource> {
+        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroupMembers(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -50090,8 +51246,8 @@ export const UsersGroupsApiFp = {
      * @param userId The id of the user
      * @param filterChildren Whether to limit group list to children of groups only. If true, shows only groups with parents. If false, shows only groups with no parent.
      */
-    getGroupsForUser(params: { userId: number; filterChildren?: boolean;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<string>> {
-        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroupsForUser(params, options);
+    getGroupsForUser(params: { userId: number; filterChildren?: boolean;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<string>> {
+        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroupsForUser(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -50115,8 +51271,8 @@ export const UsersGroupsApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    listGroups(params: { filterTemplate?: string; filterMemberCount?: string; filterName?: string; filterUniqueName?: string; filterParent?: string; filterStatus?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceGroupResource> {
-        const fetchArgs = UsersGroupsApiFetchParamCreator.listGroups(params, options);
+    listGroups(params: { filterTemplate?: string; filterMemberCount?: string; filterName?: string; filterUniqueName?: string; filterParent?: string; filterStatus?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceGroupResource> {
+        const fetchArgs = UsersGroupsApiFetchParamCreator.listGroups(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -50336,7 +51492,7 @@ export class UsersGroupsApi extends BaseAPI {
      * @param uniqueName The group unique name
      */
     getGroup(params: {  uniqueName: string; }, options: any = {}) {
-        return UsersGroupsApiFp.getGroup(params, options)(this.fetch, this.basePath);
+        return UsersGroupsApiFp.getGroup(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -50345,7 +51501,7 @@ export class UsersGroupsApi extends BaseAPI {
      * @param userId The id of the user
      */
     getGroupMember(params: {  uniqueName: string; userId: number; }, options: any = {}) {
-        return UsersGroupsApiFp.getGroupMember(params, options)(this.fetch, this.basePath);
+        return UsersGroupsApiFp.getGroupMember(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -50374,7 +51530,7 @@ export class UsersGroupsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getGroupMembers(params: {  uniqueName: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return UsersGroupsApiFp.getGroupMembers(params, options)(this.fetch, this.basePath);
+        return UsersGroupsApiFp.getGroupMembers(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -50401,7 +51557,7 @@ export class UsersGroupsApi extends BaseAPI {
      * @param filterChildren Whether to limit group list to children of groups only. If true, shows only groups with parents. If false, shows only groups with no parent.
      */
     getGroupsForUser(params: {  userId: number; filterChildren?: boolean; }, options: any = {}) {
-        return UsersGroupsApiFp.getGroupsForUser(params, options)(this.fetch, this.basePath);
+        return UsersGroupsApiFp.getGroupsForUser(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -50417,7 +51573,7 @@ export class UsersGroupsApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     listGroups(params: {  filterTemplate?: string; filterMemberCount?: string; filterName?: string; filterUniqueName?: string; filterParent?: string; filterStatus?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return UsersGroupsApiFp.listGroups(params, options)(this.fetch, this.basePath);
+        return UsersGroupsApiFp.listGroups(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -50565,8 +51721,8 @@ export const UsersGroupsApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @summary Loads a specific group's details
          * @param uniqueName The group unique name
          */
-        getGroup(params: {  uniqueName: string; }, options: any = {}) {
-            return UsersGroupsApiFp.getGroup(params, options)(fetch, basePath);
+        getGroup(params: {  uniqueName: string; }, configuration: Configuration, options: any = {}) {
+            return UsersGroupsApiFp.getGroup(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -50574,8 +51730,8 @@ export const UsersGroupsApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param uniqueName The group unique name
          * @param userId The id of the user
          */
-        getGroupMember(params: {  uniqueName: string; userId: number; }, options: any = {}) {
-            return UsersGroupsApiFp.getGroupMember(params, options)(fetch, basePath);
+        getGroupMember(params: {  uniqueName: string; userId: number; }, configuration: Configuration, options: any = {}) {
+            return UsersGroupsApiFp.getGroupMember(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -50603,8 +51759,8 @@ export const UsersGroupsApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getGroupMembers(params: {  uniqueName: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return UsersGroupsApiFp.getGroupMembers(params, options)(fetch, basePath);
+        getGroupMembers(params: {  uniqueName: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return UsersGroupsApiFp.getGroupMembers(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -50630,8 +51786,8 @@ export const UsersGroupsApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param userId The id of the user
          * @param filterChildren Whether to limit group list to children of groups only. If true, shows only groups with parents. If false, shows only groups with no parent.
          */
-        getGroupsForUser(params: {  userId: number; filterChildren?: boolean; }, options: any = {}) {
-            return UsersGroupsApiFp.getGroupsForUser(params, options)(fetch, basePath);
+        getGroupsForUser(params: {  userId: number; filterChildren?: boolean; }, configuration: Configuration, options: any = {}) {
+            return UsersGroupsApiFp.getGroupsForUser(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -50646,8 +51802,8 @@ export const UsersGroupsApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        listGroups(params: {  filterTemplate?: string; filterMemberCount?: string; filterName?: string; filterUniqueName?: string; filterParent?: string; filterStatus?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return UsersGroupsApiFp.listGroups(params, options)(fetch, basePath);
+        listGroups(params: {  filterTemplate?: string; filterMemberCount?: string; filterName?: string; filterUniqueName?: string; filterParent?: string; filterStatus?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return UsersGroupsApiFp.listGroups(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -50986,7 +52142,7 @@ export const UsersInventoryApiFetchParamCreator = {
      * @summary Get a single entitlement item
      * @param entitlementId The id of the entitlement
      */
-    getEntitlementItem(params: {  entitlementId: number; }, options: any = {}): FetchArgs {
+    getEntitlementItem(params: {  entitlementId: number; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "entitlementId" is set
         if (params["entitlementId"] == null) {
             throw new Error("Missing required parameter entitlementId when calling getEntitlementItem");
@@ -50999,6 +52155,20 @@ export const UsersInventoryApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -51014,7 +52184,7 @@ export const UsersInventoryApiFetchParamCreator = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getEntitlementItems(params: {  filterTemplate?: string; size?: number; page?: number; order?: string; }, options: any = {}): FetchArgs {
+    getEntitlementItems(params: {  filterTemplate?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/entitlements`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
@@ -51035,6 +52205,20 @@ export const UsersInventoryApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -51827,8 +53011,8 @@ export const UsersInventoryApiFp = {
      * @summary Get a single entitlement item
      * @param entitlementId The id of the entitlement
      */
-    getEntitlementItem(params: { entitlementId: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<EntitlementItem> {
-        const fetchArgs = UsersInventoryApiFetchParamCreator.getEntitlementItem(params, options);
+    getEntitlementItem(params: { entitlementId: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<EntitlementItem> {
+        const fetchArgs = UsersInventoryApiFetchParamCreator.getEntitlementItem(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -51847,8 +53031,8 @@ export const UsersInventoryApiFp = {
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getEntitlementItems(params: { filterTemplate?: string; size?: number; page?: number; order?: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceEntitlementItem> {
-        const fetchArgs = UsersInventoryApiFetchParamCreator.getEntitlementItems(params, options);
+    getEntitlementItems(params: { filterTemplate?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceEntitlementItem> {
+        const fetchArgs = UsersInventoryApiFetchParamCreator.getEntitlementItems(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -52179,7 +53363,7 @@ export class UsersInventoryApi extends BaseAPI {
      * @param entitlementId The id of the entitlement
      */
     getEntitlementItem(params: {  entitlementId: number; }, options: any = {}) {
-        return UsersInventoryApiFp.getEntitlementItem(params, options)(this.fetch, this.basePath);
+        return UsersInventoryApiFp.getEntitlementItem(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -52190,7 +53374,7 @@ export class UsersInventoryApi extends BaseAPI {
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
     getEntitlementItems(params: {  filterTemplate?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-        return UsersInventoryApiFp.getEntitlementItems(params, options)(this.fetch, this.basePath);
+        return UsersInventoryApiFp.getEntitlementItems(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -52395,8 +53579,8 @@ export const UsersInventoryApiFactory = function (fetch?: FetchAPI, basePath?: s
          * @summary Get a single entitlement item
          * @param entitlementId The id of the entitlement
          */
-        getEntitlementItem(params: {  entitlementId: number; }, options: any = {}) {
-            return UsersInventoryApiFp.getEntitlementItem(params, options)(fetch, basePath);
+        getEntitlementItem(params: {  entitlementId: number; }, configuration: Configuration, options: any = {}) {
+            return UsersInventoryApiFp.getEntitlementItem(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -52406,8 +53590,8 @@ export const UsersInventoryApiFactory = function (fetch?: FetchAPI, basePath?: s
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getEntitlementItems(params: {  filterTemplate?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
-            return UsersInventoryApiFp.getEntitlementItems(params, options)(fetch, basePath);
+        getEntitlementItems(params: {  filterTemplate?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return UsersInventoryApiFp.getEntitlementItems(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -53689,7 +54873,7 @@ export const UtilBatchApiFetchParamCreator = {
      * @summary Get batch result with token
      * @param token token
      */
-    getBatch(params: {  token: string; }, options: any = {}): FetchArgs {
+    getBatch(params: {  token: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "token" is set
         if (params["token"] == null) {
             throw new Error("Missing required parameter token when calling getBatch");
@@ -53702,6 +54886,20 @@ export const UtilBatchApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -53758,8 +54956,8 @@ export const UtilBatchApiFp = {
      * @summary Get batch result with token
      * @param token token
      */
-    getBatch(params: { token: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<BatchReturn>> {
-        const fetchArgs = UtilBatchApiFetchParamCreator.getBatch(params, options);
+    getBatch(params: { token: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<BatchReturn>> {
+        const fetchArgs = UtilBatchApiFetchParamCreator.getBatch(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -53799,7 +54997,7 @@ export class UtilBatchApi extends BaseAPI {
      * @param token token
      */
     getBatch(params: {  token: string; }, options: any = {}) {
-        return UtilBatchApiFp.getBatch(params, options)(this.fetch, this.basePath);
+        return UtilBatchApiFp.getBatch(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * Should the request take longer than one of the alloted timeout parameters, a token will be returned instead, which can be used on the token endpoint in this service
@@ -53821,8 +55019,8 @@ export const UtilBatchApiFactory = function (fetch?: FetchAPI, basePath?: string
          * @summary Get batch result with token
          * @param token token
          */
-        getBatch(params: {  token: string; }, options: any = {}) {
-            return UtilBatchApiFp.getBatch(params, options)(fetch, basePath);
+        getBatch(params: {  token: string; }, configuration: Configuration, options: any = {}) {
+            return UtilBatchApiFp.getBatch(params, configuration, options)(fetch, basePath);
         },
         /**
          * Should the request take longer than one of the alloted timeout parameters, a token will be returned instead, which can be used on the token endpoint in this service
@@ -53844,7 +55042,7 @@ export const UtilHealthApiFetchParamCreator = {
      * 
      * @summary Get health info
      */
-    getHealth(options: any = {}): FetchArgs {
+    getHealth(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/health`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -53852,6 +55050,20 @@ export const UtilHealthApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -53869,8 +55081,8 @@ export const UtilHealthApiFp = {
      * 
      * @summary Get health info
      */
-    getHealth(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
-        const fetchArgs = UtilHealthApiFetchParamCreator.getHealth(options);
+    getHealth(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = UtilHealthApiFetchParamCreator.getHealth(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -53892,7 +55104,7 @@ export class UtilHealthApi extends BaseAPI {
      * @summary Get health info
      */
     getHealth(options: any = {}) {
-        return UtilHealthApiFp.getHealth(options)(this.fetch, this.basePath);
+        return UtilHealthApiFp.getHealth(this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -53905,8 +55117,8 @@ export const UtilHealthApiFactory = function (fetch?: FetchAPI, basePath?: strin
          * 
          * @summary Get health info
          */
-        getHealth(options: any = {}) {
-            return UtilHealthApiFp.getHealth(options)(fetch, basePath);
+        getHealth(configuration: Configuration, options: any = {}) {
+            return UtilHealthApiFp.getHealth(configuration, options)(fetch, basePath);
         },
     };
 };
@@ -53953,7 +55165,7 @@ export const UtilMaintenanceApiFetchParamCreator = {
      * Get current maintenance info. 404 if no maintenance.
      * @summary Get current maintenance info
      */
-    getMaintenance(options: any = {}): FetchArgs {
+    getMaintenance(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/maintenance`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -53961,6 +55173,20 @@ export const UtilMaintenanceApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -54070,8 +55296,8 @@ export const UtilMaintenanceApiFp = {
      * Get current maintenance info. 404 if no maintenance.
      * @summary Get current maintenance info
      */
-    getMaintenance(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Maintenance> {
-        const fetchArgs = UtilMaintenanceApiFetchParamCreator.getMaintenance(options);
+    getMaintenance(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Maintenance> {
+        const fetchArgs = UtilMaintenanceApiFetchParamCreator.getMaintenance(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -54134,7 +55360,7 @@ export class UtilMaintenanceApi extends BaseAPI {
      * @summary Get current maintenance info
      */
     getMaintenance(options: any = {}) {
-        return UtilMaintenanceApiFp.getMaintenance(options)(this.fetch, this.basePath);
+        return UtilMaintenanceApiFp.getMaintenance(this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -54170,8 +55396,8 @@ export const UtilMaintenanceApiFactory = function (fetch?: FetchAPI, basePath?: 
          * Get current maintenance info. 404 if no maintenance.
          * @summary Get current maintenance info
          */
-        getMaintenance(options: any = {}) {
-            return UtilMaintenanceApiFp.getMaintenance(options)(fetch, basePath);
+        getMaintenance(configuration: Configuration, options: any = {}) {
+            return UtilMaintenanceApiFp.getMaintenance(configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -54383,7 +55609,7 @@ export const UtilVersionApiFetchParamCreator = {
      * 
      * @summary Get current version info
      */
-    getVersion(options: any = {}): FetchArgs {
+    getVersion(configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/version`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
@@ -54391,6 +55617,20 @@ export const UtilVersionApiFetchParamCreator = {
         let contentTypeHeader: Dictionary<string> = {};
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -54408,8 +55648,8 @@ export const UtilVersionApiFp = {
      * 
      * @summary Get current version info
      */
-    getVersion(options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Version> {
-        const fetchArgs = UtilVersionApiFetchParamCreator.getVersion(options);
+    getVersion(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Version> {
+        const fetchArgs = UtilVersionApiFetchParamCreator.getVersion(configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -54431,7 +55671,7 @@ export class UtilVersionApi extends BaseAPI {
      * @summary Get current version info
      */
     getVersion(options: any = {}) {
-        return UtilVersionApiFp.getVersion(options)(this.fetch, this.basePath);
+        return UtilVersionApiFp.getVersion(this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -54444,8 +55684,8 @@ export const UtilVersionApiFactory = function (fetch?: FetchAPI, basePath?: stri
          * 
          * @summary Get current version info
          */
-        getVersion(options: any = {}) {
-            return UtilVersionApiFp.getVersion(options)(fetch, basePath);
+        getVersion(configuration: Configuration, options: any = {}) {
+            return UtilVersionApiFp.getVersion(configuration, options)(fetch, basePath);
         },
     };
 };
