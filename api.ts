@@ -21,7 +21,7 @@ import { Configuration } from "./configuration";
 interface Dictionary<T> { [index: string]: T; }
 export interface FetchAPI { (url: string, init?: any): Promise<any>; }
 
-const BASE_PATH = "https://sandbox.knetikcloud.com".replace(/\/+$/, "");
+const BASE_PATH = "https://devsandbox.knetikcloud.com".replace(/\/+$/, "");
 
 export interface FetchArgs {
     url: string;
@@ -3067,9 +3067,6 @@ export interface MapResource {
     "type"?: string;
 }
 
-export interface Mapstringobject extends null<String, any> {
-}
-
 export interface MetricResource {
     /**
      * The id of the activity occurence where this score/metric occurred
@@ -3768,18 +3765,6 @@ export interface PageResourceLevelingResource {
 
 export interface PageResourceLocationLogResource {
     "content"?: Array<LocationLogResource>;
-    "first"?: boolean;
-    "last"?: boolean;
-    "number"?: number;
-    "numberOfElements"?: number;
-    "size"?: number;
-    "sort"?: Array<Order>;
-    "totalElements"?: number;
-    "totalPages"?: number;
-}
-
-export interface PageResourceMapstringobject {
-    "content"?: Array<Mapstringobject>;
     "first"?: boolean;
     "last"?: boolean;
     "number"?: number;
@@ -6534,6 +6519,10 @@ export interface VideoResource {
      */
     "active"?: boolean;
     /**
+     * A map of additional properties, keyed on the property name.  Must match the names and types defined in the template for this item type
+     */
+    "additionalProperties"?: { [key: string]: Property; };
+    /**
      * The original artist of the media
      */
     "author"?: SimpleReferenceResourcelong;
@@ -6621,6 +6610,10 @@ export interface VideoResource {
      * The tags for the video
      */
     "tags"?: Array<string>;
+    /**
+     * A video template this video is validated against (private). May be null and no validation of additional_properties will be done
+     */
+    "template"?: string;
     /**
      * The country of a thumbnail version. Typically a url
      */
@@ -19469,53 +19462,6 @@ export const ContentCommentsApiFetchParamCreator = {
         };
     },
     /**
-     * The body is an ElasticSearch query json. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html'>documentation</a> for details on the format and search options
-     * @summary Search the comment index
-     * @param query The search query
-     * @param size The number of objects returned per page
-     * @param page The number of the page returned, starting with 1
-     */
-    searchComments(params: {  query?: any; size?: number; page?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
-        const baseUrl = `/comments/search`;
-        let urlObj = url.parse(baseUrl, true);
-        urlObj.query =  assign({}, urlObj.query);
-        if (params["size"] !== undefined) {
-            urlObj.query["size"] = params["size"];
-        }
-        if (params["page"] !== undefined) {
-            urlObj.query["page"] = params["page"];
-        }
-        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
-
-        let contentTypeHeader: Dictionary<string> = {};
-        contentTypeHeader = { "Content-Type": "application/json" };
-        if (params["query"]) {
-            fetchOptions.body = JSON.stringify(params["query"] || {});
-        }
-        if (contentTypeHeader) {
-            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
-        }
-        // authentication (oauth2_client_credentials_grant) required
-        // oauth required
-        if (configuration.accessToken) {
-            fetchOptions.headers = assign({
-                    "Authorization": "Bearer " + configuration.accessToken,
-                    }, contentTypeHeader);
-        }
-        // authentication (oauth2_password_grant) required
-        // oauth required
-        if (configuration.accessToken) {
-            fetchOptions.headers = assign({
-                    "Authorization": "Bearer " + configuration.accessToken,
-                    }, contentTypeHeader);
-        }
-
-        return {
-            url: url.format(urlObj),
-            options: fetchOptions,
-        };
-    },
-    /**
      * 
      * @summary Update a comment
      * @param id The comment id
@@ -19637,25 +19583,6 @@ export const ContentCommentsApiFp = {
         };
     },
     /**
-     * The body is an ElasticSearch query json. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html'>documentation</a> for details on the format and search options
-     * @summary Search the comment index
-     * @param query The search query
-     * @param size The number of objects returned per page
-     * @param page The number of the page returned, starting with 1
-     */
-    searchComments(params: { query?: any; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCommentResource> {
-        const fetchArgs = ContentCommentsApiFetchParamCreator.searchComments(params, configuration, options);
-        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
-            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
-                if (response.status >= 200 && response.status < 300) {
-                    return response.json();
-                } else {
-                    throw response;
-                }
-            });
-        };
-    },
-    /**
      * 
      * @summary Update a comment
      * @param id The comment id
@@ -19715,16 +19642,6 @@ export class ContentCommentsApi extends BaseAPI {
         return ContentCommentsApiFp.getComments(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
-     * The body is an ElasticSearch query json. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html'>documentation</a> for details on the format and search options
-     * @summary Search the comment index
-     * @param query The search query
-     * @param size The number of objects returned per page
-     * @param page The number of the page returned, starting with 1
-     */
-    searchComments(params: {  query?: any; size?: number; page?: number; }, options: any = {}) {
-        return ContentCommentsApiFp.searchComments(params, this.configuration, options)(this.fetch, this.basePath);
-    }
-    /**
      * 
      * @summary Update a comment
      * @param id The comment id
@@ -19774,16 +19691,6 @@ export const ContentCommentsApiFactory = function (fetch?: FetchAPI, basePath?: 
          */
         getComments(params: {  context: string; contextId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
             return ContentCommentsApiFp.getComments(params, configuration, options)(fetch, basePath);
-        },
-        /**
-         * The body is an ElasticSearch query json. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html'>documentation</a> for details on the format and search options
-         * @summary Search the comment index
-         * @param query The search query
-         * @param size The number of objects returned per page
-         * @param page The number of the page returned, starting with 1
-         */
-        searchComments(params: {  query?: any; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
-            return ContentCommentsApiFp.searchComments(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -32210,6 +32117,44 @@ export const MediaVideosApiFetchParamCreator = {
         };
     },
     /**
+     * Video Templates define a type of video and the properties they have
+     * @summary Create a video template
+     * @param videoTemplateResource The video template resource object
+     */
+    createVideoTemplate(params: {  videoTemplateResource?: TemplateResource; }, configuration: Configuration, options: any = {}): FetchArgs {
+        const baseUrl = `/media/videos/templates`;
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["videoTemplateResource"]) {
+            fetchOptions.body = JSON.stringify(params["videoTemplateResource"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
      * 
      * @summary Deletes a video from the system if no resources are attached to it
      * @param id The video id
@@ -32390,6 +32335,50 @@ export const MediaVideosApiFetchParamCreator = {
             .replace(`{${"video_id"}}`, `${ params["videoId"] }`)
             .replace(`{${"id"}}`, `${ params["id"] }`);
         let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "DELETE" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * If cascade = 'detach', it will force delete the template even if it's attached to other objects
+     * @summary Delete a video template
+     * @param id The id of the template
+     * @param cascade The value needed to delete used templates
+     */
+    deleteVideoTemplate(params: {  id: string; cascade?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling deleteVideoTemplate");
+        }
+        const baseUrl = `/media/videos/templates/{id}`
+            .replace(`{${"id"}}`, `${ params["id"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        urlObj.query =  assign({}, urlObj.query);
+        if (params["cascade"] !== undefined) {
+            urlObj.query["cascade"] = params["cascade"];
+        }
         let fetchOptions: RequestInit = assign({}, { method: "DELETE" }, options);
 
         let contentTypeHeader: Dictionary<string> = {};
@@ -32624,6 +32613,91 @@ export const MediaVideosApiFetchParamCreator = {
         }
         if (params["page"] !== undefined) {
             urlObj.query["page"] = params["page"];
+        }
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * 
+     * @summary Get a single video template
+     * @param id The id of the template
+     */
+    getVideoTemplate(params: {  id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling getVideoTemplate");
+        }
+        const baseUrl = `/media/videos/templates/{id}`
+            .replace(`{${"id"}}`, `${ params["id"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * 
+     * @summary List and search video templates
+     * @param size The number of objects returned per page
+     * @param page The number of the page returned, starting with 1
+     * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
+     */
+    getVideoTemplates(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        const baseUrl = `/media/videos/templates`;
+        let urlObj = url.parse(baseUrl, true);
+        urlObj.query =  assign({}, urlObj.query);
+        if (params["size"] !== undefined) {
+            urlObj.query["size"] = params["size"];
+        }
+        if (params["page"] !== undefined) {
+            urlObj.query["page"] = params["page"];
+        }
+        if (params["order"] !== undefined) {
+            urlObj.query["order"] = params["order"];
         }
         let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
 
@@ -32981,6 +33055,50 @@ export const MediaVideosApiFetchParamCreator = {
     },
     /**
      * 
+     * @summary Update a video template
+     * @param id The id of the template
+     * @param videoTemplateResource The video template resource object
+     */
+    updateVideoTemplate(params: {  id: string; videoTemplateResource?: TemplateResource; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling updateVideoTemplate");
+        }
+        const baseUrl = `/media/videos/templates/{id}`
+            .replace(`{${"id"}}`, `${ params["id"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "PUT" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["videoTemplateResource"]) {
+            fetchOptions.body = JSON.stringify(params["videoTemplateResource"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * 
      * @summary Increment a video's view count
      * @param id The video id
      */
@@ -33150,6 +33268,23 @@ export const MediaVideosApiFp = {
         };
     },
     /**
+     * Video Templates define a type of video and the properties they have
+     * @summary Create a video template
+     * @param videoTemplateResource The video template resource object
+     */
+    createVideoTemplate(params: { videoTemplateResource?: TemplateResource;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<TemplateResource> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.createVideoTemplate(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
      * 
      * @summary Deletes a video from the system if no resources are attached to it
      * @param id The video id
@@ -33226,6 +33361,24 @@ export const MediaVideosApiFp = {
      */
     deleteVideoRelationship(params: { videoId: number; id: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
         const fetchArgs = MediaVideosApiFetchParamCreator.deleteVideoRelationship(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * If cascade = 'detach', it will force delete the template even if it's attached to other objects
+     * @summary Delete a video template
+     * @param id The id of the template
+     * @param cascade The value needed to delete used templates
+     */
+    deleteVideoTemplate(params: { id: string; cascade?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.deleteVideoTemplate(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -33320,6 +33473,42 @@ export const MediaVideosApiFp = {
      */
     getVideoRelationships(params: { videoId: number; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceVideoRelationshipResource> {
         const fetchArgs = MediaVideosApiFetchParamCreator.getVideoRelationships(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * 
+     * @summary Get a single video template
+     * @param id The id of the template
+     */
+    getVideoTemplate(params: { id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<TemplateResource> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.getVideoTemplate(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * 
+     * @summary List and search video templates
+     * @param size The number of objects returned per page
+     * @param page The number of the page returned, starting with 1
+     * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
+     */
+    getVideoTemplates(params: { size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceTemplateResource> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.getVideoTemplates(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -33455,6 +33644,24 @@ export const MediaVideosApiFp = {
     },
     /**
      * 
+     * @summary Update a video template
+     * @param id The id of the template
+     * @param videoTemplateResource The video template resource object
+     */
+    updateVideoTemplate(params: { id: string; videoTemplateResource?: TemplateResource;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<TemplateResource> {
+        const fetchArgs = MediaVideosApiFetchParamCreator.updateVideoTemplate(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * 
      * @summary Increment a video's view count
      * @param id The video id
      */
@@ -33539,6 +33746,14 @@ export class MediaVideosApi extends BaseAPI {
         return MediaVideosApiFp.createVideoDisposition(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
+     * Video Templates define a type of video and the properties they have
+     * @summary Create a video template
+     * @param videoTemplateResource The video template resource object
+     */
+    createVideoTemplate(params: {  videoTemplateResource?: TemplateResource; }, options: any = {}) {
+        return MediaVideosApiFp.createVideoTemplate(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
      * 
      * @summary Deletes a video from the system if no resources are attached to it
      * @param id The video id
@@ -33579,6 +33794,15 @@ export class MediaVideosApi extends BaseAPI {
      */
     deleteVideoRelationship(params: {  videoId: number; id: number; }, options: any = {}) {
         return MediaVideosApiFp.deleteVideoRelationship(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * If cascade = 'detach', it will force delete the template even if it's attached to other objects
+     * @summary Delete a video template
+     * @param id The id of the template
+     * @param cascade The value needed to delete used templates
+     */
+    deleteVideoTemplate(params: {  id: string; cascade?: string; }, options: any = {}) {
+        return MediaVideosApiFp.deleteVideoTemplate(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -33628,6 +33852,24 @@ export class MediaVideosApi extends BaseAPI {
      */
     getVideoRelationships(params: {  videoId: number; size?: number; page?: number; }, options: any = {}) {
         return MediaVideosApiFp.getVideoRelationships(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * 
+     * @summary Get a single video template
+     * @param id The id of the template
+     */
+    getVideoTemplate(params: {  id: string; }, options: any = {}) {
+        return MediaVideosApiFp.getVideoTemplate(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * 
+     * @summary List and search video templates
+     * @param size The number of objects returned per page
+     * @param page The number of the page returned, starting with 1
+     * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
+     */
+    getVideoTemplates(params: {  size?: number; page?: number; order?: string; }, options: any = {}) {
+        return MediaVideosApiFp.getVideoTemplates(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -33697,6 +33939,15 @@ export class MediaVideosApi extends BaseAPI {
      */
     updateVideoRelationship(params: {  videoId: number; relationshipId: number; details?: StringWrapper; }, options: any = {}) {
         return MediaVideosApiFp.updateVideoRelationship(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * 
+     * @summary Update a video template
+     * @param id The id of the template
+     * @param videoTemplateResource The video template resource object
+     */
+    updateVideoTemplate(params: {  id: string; videoTemplateResource?: TemplateResource; }, options: any = {}) {
+        return MediaVideosApiFp.updateVideoTemplate(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -33776,6 +34027,14 @@ export const MediaVideosApiFactory = function (fetch?: FetchAPI, basePath?: stri
             return MediaVideosApiFp.createVideoDisposition(params, configuration, options)(fetch, basePath);
         },
         /**
+         * Video Templates define a type of video and the properties they have
+         * @summary Create a video template
+         * @param videoTemplateResource The video template resource object
+         */
+        createVideoTemplate(params: {  videoTemplateResource?: TemplateResource; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.createVideoTemplate(params, configuration, options)(fetch, basePath);
+        },
+        /**
          * 
          * @summary Deletes a video from the system if no resources are attached to it
          * @param id The video id
@@ -33816,6 +34075,15 @@ export const MediaVideosApiFactory = function (fetch?: FetchAPI, basePath?: stri
          */
         deleteVideoRelationship(params: {  videoId: number; id: number; }, configuration: Configuration, options: any = {}) {
             return MediaVideosApiFp.deleteVideoRelationship(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * If cascade = 'detach', it will force delete the template even if it's attached to other objects
+         * @summary Delete a video template
+         * @param id The id of the template
+         * @param cascade The value needed to delete used templates
+         */
+        deleteVideoTemplate(params: {  id: string; cascade?: string; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.deleteVideoTemplate(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -33865,6 +34133,24 @@ export const MediaVideosApiFactory = function (fetch?: FetchAPI, basePath?: stri
          */
         getVideoRelationships(params: {  videoId: number; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
             return MediaVideosApiFp.getVideoRelationships(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * 
+         * @summary Get a single video template
+         * @param id The id of the template
+         */
+        getVideoTemplate(params: {  id: string; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.getVideoTemplate(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * 
+         * @summary List and search video templates
+         * @param size The number of objects returned per page
+         * @param page The number of the page returned, starting with 1
+         * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
+         */
+        getVideoTemplates(params: {  size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.getVideoTemplates(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -33934,6 +34220,15 @@ export const MediaVideosApiFactory = function (fetch?: FetchAPI, basePath?: stri
          */
         updateVideoRelationship(params: {  videoId: number; relationshipId: number; details?: StringWrapper; }, configuration: Configuration, options: any = {}) {
             return MediaVideosApiFp.updateVideoRelationship(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * 
+         * @summary Update a video template
+         * @param id The id of the template
+         * @param videoTemplateResource The video template resource object
+         */
+        updateVideoTemplate(params: {  id: string; videoTemplateResource?: TemplateResource; }, configuration: Configuration, options: any = {}) {
+            return MediaVideosApiFp.updateVideoTemplate(params, configuration, options)(fetch, basePath);
         },
         /**
          * 
@@ -39777,28 +40072,58 @@ export const ReportingUsersApiFactory = function (fetch?: FetchAPI, basePath?: s
  */
 export const SearchApiFetchParamCreator = {
     /**
-     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
-     * @summary Search an index with no template
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with no template
      * @param type The index type
-     * @param query The query to be used for the search
-     * @param size The number of documents returned per page
-     * @param page The number of the page returned, starting with 1
      */
-    searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, configuration: Configuration, options: any = {}): FetchArgs {
+    searchCountGET(params: {  type: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "type" is set
         if (params["type"] == null) {
-            throw new Error("Missing required parameter type when calling searchIndex");
+            throw new Error("Missing required parameter type when calling searchCountGET");
         }
-        const baseUrl = `/search/index/{type}`
+        const baseUrl = `/search/count/{type}`
             .replace(`{${"type"}}`, `${ params["type"] }`);
         let urlObj = url.parse(baseUrl, true);
-        urlObj.query =  assign({}, urlObj.query);
-        if (params["size"] !== undefined) {
-            urlObj.query["size"] = params["size"];
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
-        if (params["page"] !== undefined) {
-            urlObj.query["page"] = params["page"];
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with no template
+     * @param type The index type
+     * @param query The query to be used for the search
+     */
+    searchCountPOST(params: {  type: string; query?: any; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchCountPOST");
+        }
+        const baseUrl = `/search/count/{type}`
+            .replace(`{${"type"}}`, `${ params["type"] }`);
+        let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
 
         let contentTypeHeader: Dictionary<string> = {};
@@ -39830,34 +40155,70 @@ export const SearchApiFetchParamCreator = {
         };
     },
     /**
-     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
-     * @summary Search an index with a template
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with a template
      * @param type The index type
      * @param template The index template
-     * @param query The query to be used for the search
-     * @param size The number of documents returned per page
-     * @param page The number of the page returned, starting with 1
      */
-    searchIndexWithTemplate(params: {  type: string; template: string; query?: any; size?: number; page?: number; }, options: any = {}): FetchArgs {
+    searchCountWithTemplateGET(params: {  type: string; template: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "type" is set
         if (params["type"] == null) {
-            throw new Error("Missing required parameter type when calling searchIndexWithTemplate");
+            throw new Error("Missing required parameter type when calling searchCountWithTemplateGET");
         }
         // verify required parameter "template" is set
         if (params["template"] == null) {
-            throw new Error("Missing required parameter template when calling searchIndexWithTemplate");
+            throw new Error("Missing required parameter template when calling searchCountWithTemplateGET");
         }
-        const baseUrl = `/search/index/{type}/{template}`
+        const baseUrl = `/search/count/{type}/{template}`
             .replace(`{${"type"}}`, `${ params["type"] }`)
             .replace(`{${"template"}}`, `${ params["template"] }`);
         let urlObj = url.parse(baseUrl, true);
-        urlObj.query =  assign({}, urlObj.query);
-        if (params["size"] !== undefined) {
-            urlObj.query["size"] = params["size"];
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
-        if (params["page"] !== undefined) {
-            urlObj.query["page"] = params["page"];
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchCountWithTemplatePOST(params: {  type: string; template: string; query?: any; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchCountWithTemplatePOST");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchCountWithTemplatePOST");
+        }
+        const baseUrl = `/search/count/{type}/{template}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
 
         let contentTypeHeader: Dictionary<string> = {};
@@ -39867,6 +40228,791 @@ export const SearchApiFetchParamCreator = {
         }
         if (contentTypeHeader) {
             fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Get document with no template
+     * @param type The index type
+     * @param id The index id
+     */
+    searchDocumentGET(params: {  type: string; id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchDocumentGET");
+        }
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling searchDocumentGET");
+        }
+        const baseUrl = `/search/documents/{type}/{id}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"id"}}`, `${ params["id"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Get document with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     */
+    searchDocumentWithTemplateGET(params: {  type: string; id: string; template: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchDocumentWithTemplateGET");
+        }
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling searchDocumentWithTemplateGET");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchDocumentWithTemplateGET");
+        }
+        const baseUrl = `/search/documents/{type}/{template}/{id}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"id"}}`, `${ params["id"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with no template
+     * @param type The index type
+     * @param id The index id
+     */
+    searchExplainGET(params: {  type: string; id: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchExplainGET");
+        }
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling searchExplainGET");
+        }
+        const baseUrl = `/search/explain/{type}/{id}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"id"}}`, `${ params["id"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with no template
+     * @param type The index type
+     * @param id The index id
+     * @param query The query to be used for the search
+     */
+    searchExplainPOST(params: {  type: string; id: string; query?: any; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchExplainPOST");
+        }
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling searchExplainPOST");
+        }
+        const baseUrl = `/search/explain/{type}/{id}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"id"}}`, `${ params["id"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["query"]) {
+            fetchOptions.body = JSON.stringify(params["query"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     */
+    searchExplainWithTemplateGET(params: {  type: string; id: string; template: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchExplainWithTemplateGET");
+        }
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling searchExplainWithTemplateGET");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchExplainWithTemplateGET");
+        }
+        const baseUrl = `/search/explain/{type}/{template}/{id}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"id"}}`, `${ params["id"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchExplainWithTemplatePOST(params: {  type: string; id: string; template: string; query?: any; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchExplainWithTemplatePOST");
+        }
+        // verify required parameter "id" is set
+        if (params["id"] == null) {
+            throw new Error("Missing required parameter id when calling searchExplainWithTemplatePOST");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchExplainWithTemplatePOST");
+        }
+        const baseUrl = `/search/explain/{type}/{template}/{id}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"id"}}`, `${ params["id"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["query"]) {
+            fetchOptions.body = JSON.stringify(params["query"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+     * @summary Search an index with no template
+     * @param type The index type
+     * @param query The query to be used for the search
+     */
+    searchIndex(params: {  type: string; query?: any; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchIndex");
+        }
+        const baseUrl = `/search/index/{type}`
+            .replace(`{${"type"}}`, `${ params["type"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["query"]) {
+            fetchOptions.body = JSON.stringify(params["query"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+     * @summary Search an index with no template
+     * @param type The index type
+     */
+    searchIndexGET(params: {  type: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchIndexGET");
+        }
+        const baseUrl = `/search/index/{type}`
+            .replace(`{${"type"}}`, `${ params["type"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+     * @summary Search an index with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchIndexWithTemplateGET(params: {  type: string; template: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchIndexWithTemplateGET");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchIndexWithTemplateGET");
+        }
+        const baseUrl = `/search/index/{type}/{template}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+     * @summary Search an index with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchIndexWithTemplatePOST(params: {  type: string; template: string; query?: any; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchIndexWithTemplatePOST");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchIndexWithTemplatePOST");
+        }
+        const baseUrl = `/search/index/{type}/{template}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["query"]) {
+            fetchOptions.body = JSON.stringify(params["query"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _cat/indices for indices.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get indices
+     */
+    searchIndicesGET(configuration: Configuration, options: any = {}): FetchArgs {
+        const baseUrl = `/search/indices`;
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get mapping with no template
+     * @param type The index type
+     */
+    searchMappingsGET(params: {  type: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchMappingsGET");
+        }
+        const baseUrl = `/search/mappings/{type}`
+            .replace(`{${"type"}}`, `${ params["type"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get mapping with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchMappingsWithTemplateGET(params: {  type: string; template: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchMappingsWithTemplateGET");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchMappingsWithTemplateGET");
+        }
+        const baseUrl = `/search/mappings/{type}/{template}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with no template
+     * @param type The index type
+     */
+    searchValidateGET(params: {  type: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchValidateGET");
+        }
+        const baseUrl = `/search/validate/{type}`
+            .replace(`{${"type"}}`, `${ params["type"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with no template
+     * @param type The index type
+     * @param query The query to be used for the search
+     */
+    searchValidatePOST(params: {  type: string; query?: any; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchValidatePOST");
+        }
+        const baseUrl = `/search/validate/{type}`
+            .replace(`{${"type"}}`, `${ params["type"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["query"]) {
+            fetchOptions.body = JSON.stringify(params["query"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchValidateWithTemplateGET(params: {  type: string; template: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchValidateWithTemplateGET");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchValidateWithTemplateGET");
+        }
+        const baseUrl = `/search/validate/{type}/{template}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchValidateWithTemplatePOST(params: {  type: string; template: string; query?: any; }, configuration: Configuration, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchValidateWithTemplatePOST");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchValidateWithTemplatePOST");
+        }
+        const baseUrl = `/search/validate/{type}/{template}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["query"]) {
+            fetchOptions.body = JSON.stringify(params["query"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        // authentication (oauth2_client_credentials_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
+        }
+        // authentication (oauth2_password_grant) required
+        // oauth required
+        if (configuration.accessToken) {
+            fetchOptions.headers = assign({
+                    "Authorization": "Bearer " + configuration.accessToken,
+                    }, contentTypeHeader);
         }
 
         return {
@@ -39881,14 +41027,197 @@ export const SearchApiFetchParamCreator = {
  */
 export const SearchApiFp = {
     /**
-     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with no template
+     * @param type The index type
+     */
+    searchCountGET(params: { type: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchCountGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with no template
+     * @param type The index type
+     * @param query The query to be used for the search
+     */
+    searchCountPOST(params: { type: string; query?: any;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchCountPOST(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchCountWithTemplateGET(params: { type: string; template: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchCountWithTemplateGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchCountWithTemplatePOST(params: { type: string; template: string; query?: any;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchCountWithTemplatePOST(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Get document with no template
+     * @param type The index type
+     * @param id The index id
+     */
+    searchDocumentGET(params: { type: string; id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchDocumentGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Get document with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     */
+    searchDocumentWithTemplateGET(params: { type: string; id: string; template: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchDocumentWithTemplateGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with no template
+     * @param type The index type
+     * @param id The index id
+     */
+    searchExplainGET(params: { type: string; id: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchExplainGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with no template
+     * @param type The index type
+     * @param id The index id
+     * @param query The query to be used for the search
+     */
+    searchExplainPOST(params: { type: string; id: string; query?: any;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchExplainPOST(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     */
+    searchExplainWithTemplateGET(params: { type: string; id: string; template: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchExplainWithTemplateGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchExplainWithTemplatePOST(params: { type: string; id: string; template: string; query?: any;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchExplainWithTemplatePOST(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
      * @summary Search an index with no template
      * @param type The index type
      * @param query The query to be used for the search
-     * @param size The number of documents returned per page
-     * @param page The number of the page returned, starting with 1
      */
-    searchIndex(params: { type: string; query?: any; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceMapstringobject> {
+    searchIndex(params: { type: string; query?: any;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
         const fetchArgs = SearchApiFetchParamCreator.searchIndex(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
@@ -39901,16 +41230,172 @@ export const SearchApiFp = {
         };
     },
     /**
-     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+     * @summary Search an index with no template
+     * @param type The index type
+     */
+    searchIndexGET(params: { type: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchIndexGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+     * @summary Search an index with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchIndexWithTemplateGET(params: { type: string; template: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchIndexWithTemplateGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
      * @summary Search an index with a template
      * @param type The index type
      * @param template The index template
      * @param query The query to be used for the search
-     * @param size The number of documents returned per page
-     * @param page The number of the page returned, starting with 1
      */
-    searchIndexWithTemplate(params: { type: string; template: string; query?: any; size?: number; page?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceMapstringobject> {
-        const fetchArgs = SearchApiFetchParamCreator.searchIndexWithTemplate(params, options);
+    searchIndexWithTemplatePOST(params: { type: string; template: string; query?: any;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchIndexWithTemplatePOST(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _cat/indices for indices.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get indices
+     */
+    searchIndicesGET(configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchIndicesGET(configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get mapping with no template
+     * @param type The index type
+     */
+    searchMappingsGET(params: { type: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchMappingsGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get mapping with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchMappingsWithTemplateGET(params: { type: string; template: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchMappingsWithTemplateGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with no template
+     * @param type The index type
+     */
+    searchValidateGET(params: { type: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchValidateGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with no template
+     * @param type The index type
+     * @param query The query to be used for the search
+     */
+    searchValidatePOST(params: { type: string; query?: any;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchValidatePOST(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchValidateWithTemplateGET(params: { type: string; template: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchValidateWithTemplateGET(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchValidateWithTemplatePOST(params: { type: string; template: string; query?: any;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+        const fetchArgs = SearchApiFetchParamCreator.searchValidateWithTemplatePOST(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -39928,27 +41413,195 @@ export const SearchApiFp = {
  */
 export class SearchApi extends BaseAPI {
     /**
-     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with no template
+     * @param type The index type
+     */
+    searchCountGET(params: {  type: string; }, options: any = {}) {
+        return SearchApiFp.searchCountGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with no template
+     * @param type The index type
+     * @param query The query to be used for the search
+     */
+    searchCountPOST(params: {  type: string; query?: any; }, options: any = {}) {
+        return SearchApiFp.searchCountPOST(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchCountWithTemplateGET(params: {  type: string; template: string; }, options: any = {}) {
+        return SearchApiFp.searchCountWithTemplateGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Count matches with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchCountWithTemplatePOST(params: {  type: string; template: string; query?: any; }, options: any = {}) {
+        return SearchApiFp.searchCountWithTemplatePOST(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Get document with no template
+     * @param type The index type
+     * @param id The index id
+     */
+    searchDocumentGET(params: {  type: string; id: string; }, options: any = {}) {
+        return SearchApiFp.searchDocumentGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Get document with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     */
+    searchDocumentWithTemplateGET(params: {  type: string; id: string; template: string; }, options: any = {}) {
+        return SearchApiFp.searchDocumentWithTemplateGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with no template
+     * @param type The index type
+     * @param id The index id
+     */
+    searchExplainGET(params: {  type: string; id: string; }, options: any = {}) {
+        return SearchApiFp.searchExplainGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with no template
+     * @param type The index type
+     * @param id The index id
+     * @param query The query to be used for the search
+     */
+    searchExplainPOST(params: {  type: string; id: string; query?: any; }, options: any = {}) {
+        return SearchApiFp.searchExplainPOST(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     */
+    searchExplainWithTemplateGET(params: {  type: string; id: string; template: string; }, options: any = {}) {
+        return SearchApiFp.searchExplainWithTemplateGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+     * @summary Explain matches with a template
+     * @param type The index type
+     * @param id The index id
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchExplainWithTemplatePOST(params: {  type: string; id: string; template: string; query?: any; }, options: any = {}) {
+        return SearchApiFp.searchExplainWithTemplatePOST(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
      * @summary Search an index with no template
      * @param type The index type
      * @param query The query to be used for the search
-     * @param size The number of documents returned per page
-     * @param page The number of the page returned, starting with 1
      */
-    searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, options: any = {}) {
+    searchIndex(params: {  type: string; query?: any; }, options: any = {}) {
         return SearchApiFp.searchIndex(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
-     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+     * @summary Search an index with no template
+     * @param type The index type
+     */
+    searchIndexGET(params: {  type: string; }, options: any = {}) {
+        return SearchApiFp.searchIndexGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+     * @summary Search an index with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchIndexWithTemplateGET(params: {  type: string; template: string; }, options: any = {}) {
+        return SearchApiFp.searchIndexWithTemplateGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
      * @summary Search an index with a template
      * @param type The index type
      * @param template The index template
      * @param query The query to be used for the search
-     * @param size The number of documents returned per page
-     * @param page The number of the page returned, starting with 1
      */
-    searchIndexWithTemplate(params: {  type: string; template: string; query?: any; size?: number; page?: number; }, options: any = {}) {
-        return SearchApiFp.searchIndexWithTemplate(params, options)(this.fetch, this.basePath);
+    searchIndexWithTemplatePOST(params: {  type: string; template: string; query?: any; }, options: any = {}) {
+        return SearchApiFp.searchIndexWithTemplatePOST(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _cat/indices for indices.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get indices
+     */
+    searchIndicesGET(options: any = {}) {
+        return SearchApiFp.searchIndicesGET(this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get mapping with no template
+     * @param type The index type
+     */
+    searchMappingsGET(params: {  type: string; }, options: any = {}) {
+        return SearchApiFp.searchMappingsGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+     * @summary Get mapping with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchMappingsWithTemplateGET(params: {  type: string; template: string; }, options: any = {}) {
+        return SearchApiFp.searchMappingsWithTemplateGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with no template
+     * @param type The index type
+     */
+    searchValidateGET(params: {  type: string; }, options: any = {}) {
+        return SearchApiFp.searchValidateGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with no template
+     * @param type The index type
+     * @param query The query to be used for the search
+     */
+    searchValidatePOST(params: {  type: string; query?: any; }, options: any = {}) {
+        return SearchApiFp.searchValidatePOST(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with a template
+     * @param type The index type
+     * @param template The index template
+     */
+    searchValidateWithTemplateGET(params: {  type: string; template: string; }, options: any = {}) {
+        return SearchApiFp.searchValidateWithTemplateGET(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+     * @summary Validate matches with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     */
+    searchValidateWithTemplatePOST(params: {  type: string; template: string; query?: any; }, options: any = {}) {
+        return SearchApiFp.searchValidateWithTemplatePOST(params, this.configuration, options)(this.fetch, this.basePath);
     }
 };
 
@@ -39958,27 +41611,195 @@ export class SearchApi extends BaseAPI {
 export const SearchApiFactory = function (fetch?: FetchAPI, basePath?: string) {
     return {
         /**
-         * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+         * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Count matches with no template
+         * @param type The index type
+         */
+        searchCountGET(params: {  type: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchCountGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Count matches with no template
+         * @param type The index type
+         * @param query The query to be used for the search
+         */
+        searchCountPOST(params: {  type: string; query?: any; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchCountPOST(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Count matches with a template
+         * @param type The index type
+         * @param template The index template
+         */
+        searchCountWithTemplateGET(params: {  type: string; template: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchCountWithTemplateGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _count.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Count matches with a template
+         * @param type The index type
+         * @param template The index template
+         * @param query The query to be used for the search
+         */
+        searchCountWithTemplatePOST(params: {  type: string; template: string; query?: any; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchCountWithTemplatePOST(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Get document with no template
+         * @param type The index type
+         * @param id The index id
+         */
+        searchDocumentGET(params: {  type: string; id: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchDocumentGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Get document with a template
+         * @param type The index type
+         * @param id The index id
+         * @param template The index template
+         */
+        searchDocumentWithTemplateGET(params: {  type: string; id: string; template: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchDocumentWithTemplateGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Explain matches with no template
+         * @param type The index type
+         * @param id The index id
+         */
+        searchExplainGET(params: {  type: string; id: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchExplainGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Explain matches with no template
+         * @param type The index type
+         * @param id The index id
+         * @param query The query to be used for the search
+         */
+        searchExplainPOST(params: {  type: string; id: string; query?: any; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchExplainPOST(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Explain matches with a template
+         * @param type The index type
+         * @param id The index id
+         * @param template The index template
+         */
+        searchExplainWithTemplateGET(params: {  type: string; id: string; template: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchExplainWithTemplateGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _explain.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html'>API guide</a>
+         * @summary Explain matches with a template
+         * @param type The index type
+         * @param id The index id
+         * @param template The index template
+         * @param query The query to be used for the search
+         */
+        searchExplainWithTemplatePOST(params: {  type: string; id: string; template: string; query?: any; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchExplainWithTemplatePOST(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
          * @summary Search an index with no template
          * @param type The index type
          * @param query The query to be used for the search
-         * @param size The number of documents returned per page
-         * @param page The number of the page returned, starting with 1
          */
-        searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
+        searchIndex(params: {  type: string; query?: any; }, configuration: Configuration, options: any = {}) {
             return SearchApiFp.searchIndex(params, configuration, options)(fetch, basePath);
         },
         /**
-         * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+         * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+         * @summary Search an index with no template
+         * @param type The index type
+         */
+        searchIndexGET(params: {  type: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchIndexGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
+         * @summary Search an index with a template
+         * @param type The index type
+         * @param template The index template
+         */
+        searchIndexWithTemplateGET(params: {  type: string; template: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchIndexWithTemplateGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _search.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html'>API guide</a>
          * @summary Search an index with a template
          * @param type The index type
          * @param template The index template
          * @param query The query to be used for the search
-         * @param size The number of documents returned per page
-         * @param page The number of the page returned, starting with 1
          */
-        searchIndexWithTemplate(params: {  type: string; template: string; query?: any; size?: number; page?: number; }, options: any = {}) {
-            return SearchApiFp.searchIndexWithTemplate(params, options)(fetch, basePath);
+        searchIndexWithTemplatePOST(params: {  type: string; template: string; query?: any; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchIndexWithTemplatePOST(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _cat/indices for indices.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+         * @summary Get indices
+         */
+        searchIndicesGET(configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchIndicesGET(configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+         * @summary Get mapping with no template
+         * @param type The index type
+         */
+        searchMappingsGET(params: {  type: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchMappingsGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _mapping.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html'>API guide</a>
+         * @summary Get mapping with a template
+         * @param type The index type
+         * @param template The index template
+         */
+        searchMappingsWithTemplateGET(params: {  type: string; template: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchMappingsWithTemplateGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+         * @summary Validate matches with no template
+         * @param type The index type
+         */
+        searchValidateGET(params: {  type: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchValidateGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+         * @summary Validate matches with no template
+         * @param type The index type
+         * @param query The query to be used for the search
+         */
+        searchValidatePOST(params: {  type: string; query?: any; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchValidatePOST(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+         * @summary Validate matches with a template
+         * @param type The index type
+         * @param template The index template
+         */
+        searchValidateWithTemplateGET(params: {  type: string; template: string; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchValidateWithTemplateGET(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * This is a 1 to 1 mapping of a ElasticSearch call to _validate/query.  Further information can be found at their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html'>API guide</a>
+         * @summary Validate matches with a template
+         * @param type The index type
+         * @param template The index template
+         * @param query The query to be used for the search
+         */
+        searchValidateWithTemplatePOST(params: {  type: string; template: string; query?: any; }, configuration: Configuration, options: any = {}) {
+            return SearchApiFp.searchValidateWithTemplatePOST(params, configuration, options)(fetch, basePath);
         },
     };
 };
