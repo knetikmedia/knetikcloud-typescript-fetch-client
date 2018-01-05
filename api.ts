@@ -896,6 +896,10 @@ export interface BreRule {
      */
     "endDate"?: number;
     /**
+     * How many times the rule has been evaluated (it's conditions checked, whether it then runs or not)
+     */
+    "evaluationCount"?: number;
+    /**
      * The event name of the trigger this rule runs for. Affects which parameters are available
      */
     "eventName": string;
@@ -907,6 +911,10 @@ export interface BreRule {
      * The human readable name of the rule
      */
     "name": string;
+    /**
+     * How many times the rule has run
+     */
+    "runCount"?: number;
     /**
      * Used to sort rules to control the order they run in. Larger numbered sort values run first.  Default 500
      */
@@ -1816,7 +1824,11 @@ export interface CurrencyResource {
      */
     "createdDate"?: number;
     /**
-     * The decimal to multiply the system base currency (from config 'currency') to localize to this one. Should be 1 for the base currency itself.
+     * Whether this is the default currency. All real money wallets will be in this currency, and the 'factor' on each currency is in relation to the default. There must be one default currency and the current will be changed if you set another as the default. Cannot be combined with virtual currency. Take extreme caution when changing
+     */
+    "defaultCurrency"?: boolean;
+    /**
+     * The decimal to multiply the default currency to localize to this one. Should be 1 for the default currency itself.
      */
     "factor": number;
     /**
@@ -2360,17 +2372,17 @@ export interface GroupMemberResource {
      */
     "additionalProperties"?: { [key: string]: Property; };
     /**
-     * The url of the user's avatar image
+     * The group. Id is the unique name
      */
-    "avatarUrl"?: string;
+    "group"?: SimpleGroupResource;
     /**
-     * The public username of the user
+     * Whether this membership is explicit (the user was added directly to the group) or implicit (the user was added only to one or more child groups)
      */
-    "displayName"?: string;
+    "implicit"?: boolean;
     /**
-     * The id of the user
+     * The id of the membership entry
      */
-    "id": number;
+    "membershipId"?: number;
     /**
      * The position of the member in the group if applicable. Read notes for details
      */
@@ -2384,9 +2396,9 @@ export interface GroupMemberResource {
      */
     "template"?: string;
     /**
-     * The username of the user
+     * The user
      */
-    "username"?: string;
+    "user": SimpleUserResource;
 }
 
 export type GroupMemberResourceStatusEnum = "moderator" | "member";
@@ -2424,13 +2436,17 @@ export interface GroupResource {
      */
     "subMemberCount"?: number;
     /**
+     * Tags for search
+     */
+    "tags"?: Array<string>;
+    /**
      * A group template this group is validated against. May be null and no validation of additional_properties will be done
      */
     "template"?: string;
     /**
-     * Unique name used in url and references. Uppercase, lowercase, numbers and hyphens only. Max 50 characters. Cannot be altered once created
+     * Unique name used in url and references. Uppercase, lowercase, numbers and hyphens only. Max 50 characters. Cannot be altered once created. Default: random UUID
      */
-    "uniqueName": string;
+    "uniqueName"?: string;
 }
 
 export type GroupResourceStatusEnum = "open" | "closed";
@@ -4561,13 +4577,33 @@ export interface Property {
 
 export interface PropertyDefinitionResource {
     /**
+     * The description of the property
+     */
+    "description"?: string;
+    /**
      * A list of the fields on both the property definition and property of this type
      */
     "fieldList"?: PropertyFieldListResource;
     /**
+     * The friendly front-facing name of the property
+     */
+    "friendlyName"?: string;
+    /**
      * The name of the property
      */
     "name": string;
+    /**
+     * The JSON path to the option label
+     */
+    "optionLabelPath"?: string;
+    /**
+     * The JSON path to the option value
+     */
+    "optionValuePath"?: string;
+    /**
+     * URL of service containing the property options (assumed JSON array)
+     */
+    "optionsUrl"?: string;
     /**
      * Whether the property is required
      */
@@ -5108,6 +5144,17 @@ export interface SettingOption {
      * The value of the option. Ex: 10
      */
     "value"?: string;
+}
+
+export interface SimpleGroupResource {
+    /**
+     * The name of the group. Max 50 characters
+     */
+    "name": string;
+    /**
+     * Unique name used in url and references. Uppercase, lowercase, numbers and hyphens only. Max 50 characters. Cannot be altered once created. Default: random UUID
+     */
+    "uniqueName"?: string;
 }
 
 export interface SimpleReferenceResourceint {
@@ -6732,8 +6779,7 @@ export interface BooleanPropertyDefinitionResource extends PropertyDefinitionRes
 }
 
 export interface CacheClearEvent extends BroadcastableEvent {
-    "customerSetup"?: boolean;
-    "customerTeardown"?: boolean;
+    "teardown"?: boolean;
 }
 
 export interface Consumable extends Behavior {
@@ -20804,16 +20850,20 @@ export const CurrenciesApiFetchParamCreator = {
     /**
      * 
      * @summary List and search currencies
+     * @param filterDefault Filter for the one currency that is set as default (true), or all that are not (false)
      * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config
      * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;)
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCurrencies(params: {  filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
+    getCurrencies(params: {  filterDefault?: boolean; filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}): FetchArgs {
         const baseUrl = `/currencies`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
+        if (params["filterDefault"] !== undefined) {
+            urlObj.query["filter_default"] = params["filterDefault"];
+        }
         if (params["filterEnabledCurrencies"] !== undefined) {
             urlObj.query["filter_enabled_currencies"] = params["filterEnabledCurrencies"];
         }
@@ -20981,13 +21031,14 @@ export const CurrenciesApiFp = {
     /**
      * 
      * @summary List and search currencies
+     * @param filterDefault Filter for the one currency that is set as default (true), or all that are not (false)
      * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config
      * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;)
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCurrencies(params: { filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCurrencyResource> {
+    getCurrencies(params: { filterDefault?: boolean; filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceCurrencyResource> {
         const fetchArgs = CurrenciesApiFetchParamCreator.getCurrencies(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
@@ -21059,13 +21110,14 @@ export class CurrenciesApi extends BaseAPI {
     /**
      * 
      * @summary List and search currencies
+     * @param filterDefault Filter for the one currency that is set as default (true), or all that are not (false)
      * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config
      * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;)
      * @param size The number of objects returned per page
      * @param page The number of the page returned, starting with 1
      * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
      */
-    getCurrencies(params: {  filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
+    getCurrencies(params: {  filterDefault?: boolean; filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, options: any = {}) {
         return CurrenciesApiFp.getCurrencies(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
@@ -21111,13 +21163,14 @@ export const CurrenciesApiFactory = function (fetch?: FetchAPI, basePath?: strin
         /**
          * 
          * @summary List and search currencies
+         * @param filterDefault Filter for the one currency that is set as default (true), or all that are not (false)
          * @param filterEnabledCurrencies Filter for alternate currencies setup explicitely in system config
          * @param filterType Filter currencies by type.  Allowable values: (&#39;virtual&#39;, &#39;real&#39;)
          * @param size The number of objects returned per page
          * @param page The number of the page returned, starting with 1
          * @param order A comma separated list of sorting requirements in priority order, each entry matching PROPERTY_NAME:[ASC|DESC]
          */
-        getCurrencies(params: {  filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
+        getCurrencies(params: {  filterDefault?: boolean; filterEnabledCurrencies?: boolean; filterType?: string; size?: number; page?: number; order?: string; }, configuration: Configuration, options: any = {}) {
             return CurrenciesApiFp.getCurrencies(params, configuration, options)(fetch, basePath);
         },
         /**
@@ -34713,22 +34766,22 @@ export const ObjectsApiFetchParamCreator = {
      * 
      * @summary Update an object
      * @param templateId The id of the template this object is part of
-     * @param entitlementId The id of the entitlement
+     * @param objectId The id of the object
      * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values.
      * @param objectItem The object item object
      */
-    updateObjectItem(params: {  templateId: string; entitlementId: number; cascade?: boolean; objectItem?: EntitlementItem; }, configuration: Configuration, options: any = {}): FetchArgs {
+    updateObjectItem(params: {  templateId: string; objectId: number; cascade?: boolean; objectItem?: ObjectResource; }, configuration: Configuration, options: any = {}): FetchArgs {
         // verify required parameter "templateId" is set
         if (params["templateId"] == null) {
             throw new Error("Missing required parameter templateId when calling updateObjectItem");
         }
-        // verify required parameter "entitlementId" is set
-        if (params["entitlementId"] == null) {
-            throw new Error("Missing required parameter entitlementId when calling updateObjectItem");
+        // verify required parameter "objectId" is set
+        if (params["objectId"] == null) {
+            throw new Error("Missing required parameter objectId when calling updateObjectItem");
         }
         const baseUrl = `/objects/{template_id}/{object_id}`
             .replace(`{${"template_id"}}`, `${ params["templateId"] }`)
-            .replace(`{${"entitlement_id"}}`, `${ params["entitlementId"] }`);
+            .replace(`{${"object_id"}}`, `${ params["objectId"] }`);
         let urlObj = url.parse(baseUrl, true);
         urlObj.query =  assign({}, urlObj.query);
         if (params["cascade"] !== undefined) {
@@ -34964,11 +35017,11 @@ export const ObjectsApiFp = {
      * 
      * @summary Update an object
      * @param templateId The id of the template this object is part of
-     * @param entitlementId The id of the entitlement
+     * @param objectId The id of the object
      * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values.
      * @param objectItem The object item object
      */
-    updateObjectItem(params: { templateId: string; entitlementId: number; cascade?: boolean; objectItem?: EntitlementItem;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
+    updateObjectItem(params: { templateId: string; objectId: number; cascade?: boolean; objectItem?: ObjectResource;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
         const fetchArgs = ObjectsApiFetchParamCreator.updateObjectItem(params, configuration, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
@@ -35082,11 +35135,11 @@ export class ObjectsApi extends BaseAPI {
      * 
      * @summary Update an object
      * @param templateId The id of the template this object is part of
-     * @param entitlementId The id of the entitlement
+     * @param objectId The id of the object
      * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values.
      * @param objectItem The object item object
      */
-    updateObjectItem(params: {  templateId: string; entitlementId: number; cascade?: boolean; objectItem?: EntitlementItem; }, options: any = {}) {
+    updateObjectItem(params: {  templateId: string; objectId: number; cascade?: boolean; objectItem?: ObjectResource; }, options: any = {}) {
         return ObjectsApiFp.updateObjectItem(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
@@ -35183,11 +35236,11 @@ export const ObjectsApiFactory = function (fetch?: FetchAPI, basePath?: string) 
          * 
          * @summary Update an object
          * @param templateId The id of the template this object is part of
-         * @param entitlementId The id of the entitlement
+         * @param objectId The id of the object
          * @param cascade Whether to cascade group changes, such as in the limited gettable behavior. A 400 error will return otherwise if the group is already in use with different values.
          * @param objectItem The object item object
          */
-        updateObjectItem(params: {  templateId: string; entitlementId: number; cascade?: boolean; objectItem?: EntitlementItem; }, configuration: Configuration, options: any = {}) {
+        updateObjectItem(params: {  templateId: string; objectId: number; cascade?: boolean; objectItem?: ObjectResource; }, configuration: Configuration, options: any = {}) {
             return ObjectsApiFp.updateObjectItem(params, configuration, options)(fetch, basePath);
         },
         /**
@@ -39725,7 +39778,7 @@ export const ReportingUsersApiFactory = function (fetch?: FetchAPI, basePath?: s
 export const SearchApiFetchParamCreator = {
     /**
      * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
-     * @summary Search an index
+     * @summary Search an index with no template
      * @param type The index type
      * @param query The query to be used for the search
      * @param size The number of documents returned per page
@@ -39776,6 +39829,51 @@ export const SearchApiFetchParamCreator = {
             options: fetchOptions,
         };
     },
+    /**
+     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+     * @summary Search an index with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     * @param size The number of documents returned per page
+     * @param page The number of the page returned, starting with 1
+     */
+    searchIndexWithTemplate(params: {  type: string; template: string; query?: any; size?: number; page?: number; }, options: any = {}): FetchArgs {
+        // verify required parameter "type" is set
+        if (params["type"] == null) {
+            throw new Error("Missing required parameter type when calling searchIndexWithTemplate");
+        }
+        // verify required parameter "template" is set
+        if (params["template"] == null) {
+            throw new Error("Missing required parameter template when calling searchIndexWithTemplate");
+        }
+        const baseUrl = `/search/index/{type}/{template}`
+            .replace(`{${"type"}}`, `${ params["type"] }`)
+            .replace(`{${"template"}}`, `${ params["template"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        urlObj.query =  assign({}, urlObj.query);
+        if (params["size"] !== undefined) {
+            urlObj.query["size"] = params["size"];
+        }
+        if (params["page"] !== undefined) {
+            urlObj.query["page"] = params["page"];
+        }
+        let fetchOptions: RequestInit = assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["query"]) {
+            fetchOptions.body = JSON.stringify(params["query"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
 };
 
 /**
@@ -39784,7 +39882,7 @@ export const SearchApiFetchParamCreator = {
 export const SearchApiFp = {
     /**
      * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
-     * @summary Search an index
+     * @summary Search an index with no template
      * @param type The index type
      * @param query The query to be used for the search
      * @param size The number of documents returned per page
@@ -39792,6 +39890,27 @@ export const SearchApiFp = {
      */
     searchIndex(params: { type: string; query?: any; size?: number; page?: number;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceMapstringobject> {
         const fetchArgs = SearchApiFetchParamCreator.searchIndex(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+     * @summary Search an index with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     * @param size The number of documents returned per page
+     * @param page The number of the page returned, starting with 1
+     */
+    searchIndexWithTemplate(params: { type: string; template: string; query?: any; size?: number; page?: number;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<PageResourceMapstringobject> {
+        const fetchArgs = SearchApiFetchParamCreator.searchIndexWithTemplate(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -39810,7 +39929,7 @@ export const SearchApiFp = {
 export class SearchApi extends BaseAPI {
     /**
      * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
-     * @summary Search an index
+     * @summary Search an index with no template
      * @param type The index type
      * @param query The query to be used for the search
      * @param size The number of documents returned per page
@@ -39818,6 +39937,18 @@ export class SearchApi extends BaseAPI {
      */
     searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, options: any = {}) {
         return SearchApiFp.searchIndex(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+     * @summary Search an index with a template
+     * @param type The index type
+     * @param template The index template
+     * @param query The query to be used for the search
+     * @param size The number of documents returned per page
+     * @param page The number of the page returned, starting with 1
+     */
+    searchIndexWithTemplate(params: {  type: string; template: string; query?: any; size?: number; page?: number; }, options: any = {}) {
+        return SearchApiFp.searchIndexWithTemplate(params, options)(this.fetch, this.basePath);
     }
 };
 
@@ -39828,7 +39959,7 @@ export const SearchApiFactory = function (fetch?: FetchAPI, basePath?: string) {
     return {
         /**
          * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
-         * @summary Search an index
+         * @summary Search an index with no template
          * @param type The index type
          * @param query The query to be used for the search
          * @param size The number of documents returned per page
@@ -39836,6 +39967,18 @@ export const SearchApiFactory = function (fetch?: FetchAPI, basePath?: string) {
          */
         searchIndex(params: {  type: string; query?: any; size?: number; page?: number; }, configuration: Configuration, options: any = {}) {
             return SearchApiFp.searchIndex(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * The body is an ElasticSearch query in JSON format. Please see their <a href='https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html'>documentation</a> for details on the format and search options. The searchable object's format depends on on the type but mostly matches the resource from it's main endpoint. Exceptions include referenced objects (like user) being replaced with the full user resource to allow deeper searching.
+         * @summary Search an index with a template
+         * @param type The index type
+         * @param template The index template
+         * @param query The query to be used for the search
+         * @param size The number of documents returned per page
+         * @param page The number of the page returned, starting with 1
+         */
+        searchIndexWithTemplate(params: {  type: string; template: string; query?: any; size?: number; page?: number; }, options: any = {}) {
+            return SearchApiFp.searchIndexWithTemplate(params, options)(fetch, basePath);
         },
     };
 };
@@ -50082,8 +50225,8 @@ export const UsersGroupsApiFetchParamCreator = {
         };
     },
     /**
-     * 
-     * @summary Removes a group from the system IF no resources are attached to it
+     * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group's parent if they were not added to it directly as well.
+     * @summary Removes a group from the system
      * @param uniqueName The group unique name
      */
     deleteGroup(params: {  uniqueName: string; }, configuration: Configuration, options: any = {}): FetchArgs {
@@ -50240,6 +50383,31 @@ export const UsersGroupsApiFetchParamCreator = {
             fetchOptions.headers = assign({
                     "Authorization": "Bearer " + configuration.accessToken,
                     }, contentTypeHeader);
+        }
+
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc
+     * @summary Get group ancestors
+     * @param uniqueName The group unique name
+     */
+    getGroupAncestors(params: {  uniqueName: string; }, options: any = {}): FetchArgs {
+        // verify required parameter "uniqueName" is set
+        if (params["uniqueName"] == null) {
+            throw new Error("Missing required parameter uniqueName when calling getGroupAncestors");
+        }
+        const baseUrl = `/users/groups/{unique_name}/ancestors`
+            .replace(`{${"unique_name"}}`, `${ params["uniqueName"] }`);
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        if (contentTypeHeader) {
+            fetchOptions.headers = assign({}, contentTypeHeader, fetchOptions.headers);
         }
 
         return {
@@ -50674,7 +50842,7 @@ export const UsersGroupsApiFetchParamCreator = {
         };
     },
     /**
-     * 
+     * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it.
      * @summary Update a group
      * @param uniqueName The group unique name
      * @param groupResource The updated group
@@ -51061,8 +51229,8 @@ export const UsersGroupsApiFp = {
         };
     },
     /**
-     * 
-     * @summary Removes a group from the system IF no resources are attached to it
+     * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group's parent if they were not added to it directly as well.
+     * @summary Removes a group from the system
      * @param uniqueName The group unique name
      */
     deleteGroup(params: { uniqueName: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<any> {
@@ -51120,6 +51288,23 @@ export const UsersGroupsApiFp = {
      */
     getGroup(params: { uniqueName: string;  }, configuration: Configuration, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<GroupResource> {
         const fetchArgs = UsersGroupsApiFetchParamCreator.getGroup(params, configuration, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc
+     * @summary Get group ancestors
+     * @param uniqueName The group unique name
+     */
+    getGroupAncestors(params: { uniqueName: string;  }, options: any = {}): (fetch: FetchAPI, basePath?: string) => Promise<Array<GroupResource>> {
+        const fetchArgs = UsersGroupsApiFetchParamCreator.getGroupAncestors(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -51302,7 +51487,7 @@ export const UsersGroupsApiFp = {
         };
     },
     /**
-     * 
+     * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it.
      * @summary Update a group
      * @param uniqueName The group unique name
      * @param groupResource The updated group
@@ -51461,8 +51646,8 @@ export class UsersGroupsApi extends BaseAPI {
         return UsersGroupsApiFp.createGroupTemplate(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
-     * 
-     * @summary Removes a group from the system IF no resources are attached to it
+     * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group's parent if they were not added to it directly as well.
+     * @summary Removes a group from the system
      * @param uniqueName The group unique name
      */
     deleteGroup(params: {  uniqueName: string; }, options: any = {}) {
@@ -51493,6 +51678,14 @@ export class UsersGroupsApi extends BaseAPI {
      */
     getGroup(params: {  uniqueName: string; }, options: any = {}) {
         return UsersGroupsApiFp.getGroup(params, this.configuration, options)(this.fetch, this.basePath);
+    }
+    /**
+     * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc
+     * @summary Get group ancestors
+     * @param uniqueName The group unique name
+     */
+    getGroupAncestors(params: {  uniqueName: string; }, options: any = {}) {
+        return UsersGroupsApiFp.getGroupAncestors(params, options)(this.fetch, this.basePath);
     }
     /**
      * 
@@ -51585,7 +51778,7 @@ export class UsersGroupsApi extends BaseAPI {
         return UsersGroupsApiFp.removeGroupMember(params, this.configuration, options)(this.fetch, this.basePath);
     }
     /**
-     * 
+     * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it.
      * @summary Update a group
      * @param uniqueName The group unique name
      * @param groupResource The updated group
@@ -51691,8 +51884,8 @@ export const UsersGroupsApiFactory = function (fetch?: FetchAPI, basePath?: stri
             return UsersGroupsApiFp.createGroupTemplate(params, configuration, options)(fetch, basePath);
         },
         /**
-         * 
-         * @summary Removes a group from the system IF no resources are attached to it
+         * All groups listing this as the parent are also removed and users are in turn removed from this and those groups. This may result in users no longer being in this group's parent if they were not added to it directly as well.
+         * @summary Removes a group from the system
          * @param uniqueName The group unique name
          */
         deleteGroup(params: {  uniqueName: string; }, configuration: Configuration, options: any = {}) {
@@ -51723,6 +51916,14 @@ export const UsersGroupsApiFactory = function (fetch?: FetchAPI, basePath?: stri
          */
         getGroup(params: {  uniqueName: string; }, configuration: Configuration, options: any = {}) {
             return UsersGroupsApiFp.getGroup(params, configuration, options)(fetch, basePath);
+        },
+        /**
+         * Returns a list of ancestor groups in reverse order (parent, then grandparent, etc
+         * @summary Get group ancestors
+         * @param uniqueName The group unique name
+         */
+        getGroupAncestors(params: {  uniqueName: string; }, options: any = {}) {
+            return UsersGroupsApiFp.getGroupAncestors(params, options)(fetch, basePath);
         },
         /**
          * 
@@ -51815,7 +52016,7 @@ export const UsersGroupsApiFactory = function (fetch?: FetchAPI, basePath?: stri
             return UsersGroupsApiFp.removeGroupMember(params, configuration, options)(fetch, basePath);
         },
         /**
-         * 
+         * If adding/removing/changing parent, user membership in group/new parent groups may be modified. The parent being removed will remove members from this sub group unless they were added explicitly to the parent and the new parent will gain members unless they were already a part of it.
          * @summary Update a group
          * @param uniqueName The group unique name
          * @param groupResource The updated group
